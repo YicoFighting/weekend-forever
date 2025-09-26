@@ -6,14 +6,7 @@
 </template>
 
 <script setup lang="ts">
-
-  const test = () => {
-
-
-
-
-    
-  }
+const test = () => {};
 </script>
 
 <style scoped lang="scss"></style>

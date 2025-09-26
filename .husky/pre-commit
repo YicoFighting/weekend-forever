@@ -1,5 +1,0 @@
-#!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
-
-# 使用 Windows cmd 调用，确保在 Windows 下能找到 node/pnpm
-cmd.exe /c "pnpm exec lint-staged"

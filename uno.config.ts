@@ -1,9 +1,12 @@
 // uno.config.ts
-import { defineConfig } from 'unocss';
+import { defineConfig, presetUno } from 'unocss';
+import { presetIcons } from '@unocss/preset-icons';
 import { presetUni } from '@uni-helper/unocss-preset-uni';
 
 export default defineConfig({
   presets: [
+    presetUno(),
+    presetIcons({ scale: 1, warn: true }),
     presetUni(), // 专为 UniApp 打造的预设
   ],
   // 可选：自定义规则
