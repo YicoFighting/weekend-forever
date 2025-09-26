@@ -1,12 +1,9 @@
 <template>
   <view>
-    <text class="bg-blue-500">首页</text>
-    <wd-button type="primary">点击我</wd-button>
+    <wd-button type="primary" class="mt-2 flex justify-center">点击我</wd-button>
   </view>
 </template>
 
-<script setup lang="ts">
-const test = () => {};
-</script>
+<script setup lang="ts"></script>
 
 <style scoped lang="scss"></style>
