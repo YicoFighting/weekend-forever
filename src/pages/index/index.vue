@@ -1,6 +1,6 @@
 <template>
   <view>
-    <text>首页</text>
+    <text class="bg-blue-500">首页</text>
     <scroll-view scroll-x>
       <view v-for="item in 10" :key="item">
         <text>{{ item }}</text>
