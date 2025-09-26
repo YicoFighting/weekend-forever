@@ -1,0 +1,18 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# 跳过类型：merge、squash、模板、已有消息
+case "$2" in
+  merge|squash)
+    exit 0
+    ;;
+esac
+
+# 如果已有提交信息（如 -m 传入），不强制覆盖
+if [ -s "$1" ]; then
+  exit 0
+fi
+
+# 运行 commitizen 交互式向导
+npx --no-install git-cz --hook || true
+

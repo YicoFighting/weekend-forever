@@ -1,8 +1,8 @@
-import { defineStore } from "pinia";
-import { ref } from "vue";
+import { defineStore } from 'pinia';
+import { ref } from 'vue';
 
 export const useUserStore = defineStore(
-  "user",
+  'user',
   () => {
     // 用户信息
     const user = ref<any>({});
@@ -35,5 +35,5 @@ export const useUserStore = defineStore(
         },
       },
     },
-  }
+  },
 );

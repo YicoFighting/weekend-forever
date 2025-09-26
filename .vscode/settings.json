@@ -1,0 +1,17 @@
+{
+  // 保存时自动格式化文件
+  "editor.formatOnSave": true,
+  // 指定默认格式化工具为 Prettier
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  // 确保 Prettier 遵循 EditorConfig 规则（通常为默认行为，显式设置更安全）
+  "prettier.useEditorConfig": true,
+  // 文件嵌套
+  "explorer.fileNesting.enabled": true,
+  "explorer.fileNesting.expand": false,
+  "explorer.fileNesting.patterns": {
+    "README.md": "index.html,favicon.ico,robots.txt,CHANGELOG.md",
+    "pages.config.ts": "manifest.config.ts,openapi-ts-request.config.ts",
+    "package.json": "tsconfig.json,pnpm-lock.yaml,pnpm-workspace.yaml,LICENSE,.gitattributes,.gitignore,.gitpod.yml,CNAME,.npmrc,.browserslistrc",
+    "eslint.config.cjs": ".commitlintrc.*,.prettier*,.editorconfig,.commitlint.cjs,.eslint*,.cz-config.js,.gitmessage.example,commitlint.config.cjs"
+  }
+}

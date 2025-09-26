@@ -1,38 +1,15 @@
 <template>
-  <view class="content">
-    <wd-button type="primary">{{ title }}</wd-button>
+  <view>
+    <text>首页</text>
+    <scroll-view scroll-x>
+      <view v-for="item in 10" :key="item">
+        <text>{{ item }}</text>
+      </view>
+    </scroll-view>
+    <wd-button type="primary">点击我</wd-button>
   </view>
 </template>
 
-<script setup lang="ts">
-import { ref } from 'vue'
-const title = ref('Hello')
-</script>
+<script setup lang="ts"></script>
 
-<style lang="scss" scoped>
-.content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
-
-.logo {
-  height: 200rpx;
-  width: 200rpx;
-  margin-top: 200rpx;
-  margin-left: auto;
-  margin-right: auto;
-  margin-bottom: 50rpx;
-}
-
-.text-area {
-  display: flex;
-  justify-content: center;
-}
-
-.title {
-  font-size: 36rpx;
-  color: #8f8f94;
-}
-</style>
+<style scoped lang="scss"></style>
