@@ -7,7 +7,16 @@
       "@/*": ["./src/*"]
     },
     "lib": ["esnext", "dom"],
-    "types": ["@dcloudio/types", "wot-design-uni/global"]
+    "types": [
+      "@dcloudio/types",
+      "@uni-helper/uni-app-types",
+      "wot-design-uni/global"
+    ]
+  },
+  // vue 编译器类型，校验标签类型
+  "vueCompilerOptions": {
+    // 原配置 experimentalRuntimeMode 已废弃，请升级 Vue - Official 插件至最新版本
+    "plugins": ["@uni-helper/uni-app-types/volar-plugin"] 
   },
   "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue"]
 }

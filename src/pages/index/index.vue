@@ -1,6 +1,6 @@
 <template>
   <view class="content">
-    <wd-button type="success">成功按钮</wd-button>
+    <wd-button type="primary">{{ title }}</wd-button>
   </view>
 </template>
 
@@ -9,7 +9,7 @@ import { ref } from 'vue'
 const title = ref('Hello')
 </script>
 
-<style>
+<style lang="scss" scoped>
 .content {
   display: flex;
   flex-direction: column;
