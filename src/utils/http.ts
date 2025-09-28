@@ -1,7 +1,7 @@
 import { useUserStore } from '@/stores';
 
 // 请求基地址
-const baseURL = 'https://pcapi-xiaotuxian-front-devtest.itheima.net';
+const baseURL = import.meta.env.VITE_API_BASE_URL;
 
 // 拦截器配置
 const httpInterceptor = {
@@ -47,8 +47,8 @@ uni.addInterceptor('uploadFile', httpInterceptor);
  */
 type Data<T> = {
   code: string;
-  msg: string;
-  result: T;
+  message: string;
+  data: T;
 };
 // 2.2 添加类型，支持泛型
 export const http = <T>(options: UniApp.RequestOptions) => {
@@ -72,7 +72,7 @@ export const http = <T>(options: UniApp.RequestOptions) => {
           // 其他错误 -> 根据后端错误信息轻提示
           uni.showToast({
             icon: 'none',
-            title: (res.data as Data<T>).msg || '请求错误',
+            title: (res.data as Data<T>).message || '请求错误',
           });
           reject(res);
         }
