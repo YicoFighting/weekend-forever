@@ -1,4 +1,3 @@
-// uno.config.ts
 import { defineConfig, presetUno } from 'unocss';
 import { presetIcons } from '@unocss/preset-icons';
 import { presetUni } from '@uni-helper/unocss-preset-uni';

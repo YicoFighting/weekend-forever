@@ -2,14 +2,16 @@
   "easycom": {
     "autoscan": true,
     "custom": {
-      "^wd-(.*)": "wot-design-uni/components/wd-$1/wd-$1.vue"
+      "^wd-(.*)": "wot-design-uni/components/wd-$1/wd-$1.vue",
+      "^xl-(.*)": "@/components/xl-$1/index.vue"
     }
   },
   "pages": [
     {
       "path": "pages/index/index",
       "style": {
-        "navigationBarTitleText": "uni-app"
+        // "navigationBarTitleText": "uni-app"
+        "navigationStyle": "custom"
       }
     }
   ],
