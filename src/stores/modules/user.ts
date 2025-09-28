@@ -25,15 +25,6 @@ export const useUserStore = defineStore(
     };
   },
   {
-    persist: {
-      storage: {
-        setItem(key, value) {
-          uni.setStorageSync(key, value);
-        },
-        getItem(key) {
-          return uni.getStorageSync(key);
-        },
-      },
-    },
+    persist: true,
   },
 );
