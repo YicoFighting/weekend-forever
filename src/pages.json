@@ -8,9 +8,20 @@
   },
   "pages": [
     {
-      "path": "pages/index/index",
+      "path": "pages/home/index",
       "style": {
-        // "navigationBarTitleText": "uni-app"
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/home/history/index",
+      "style": {
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/login/index",
+      "style": {
         "navigationStyle": "custom"
       }
     }
@@ -19,6 +30,10 @@
     "navigationBarTextStyle": "black",
     "navigationBarTitleText": "uni-app",
     "navigationBarBackgroundColor": "#F8F8F8",
-    "backgroundColor": "#F8F8F8"
+    "backgroundColor": "#F8F8F8",
+    "app-plus": {
+      // 禁止页面回弹效果
+      "bounce": "none"
+    }
   }
 }

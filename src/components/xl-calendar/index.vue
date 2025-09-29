@@ -1,487 +1,291 @@
-<script setup lang="ts">
-import { computed, ref } from 'vue';
+<template>
+  <view class="xl-calendar">
+    <xl-floating-panel v-model:height="height" :anchors="anchors" @heightChange="onHeightChange">
+      <text @tap="onYearMonthTap">{{ baseMonth }} 月</text>
+      <swiper class="swiper" :current="currentIndex" circular @change="onChange">
+        <swiper-item v-for="(cells, idx) in list" :key="idx">
+          <view class="swiper-item">
+            <view v-if="showWeekHeader" class="xl-calendar__week">
+              <view v-for="w in weekdayLabels" :key="w" class="xl-calendar__week-item">
+                {{ w }}
+              </view>
+            </view>
+            <view class="grid">
+              <view
+                v-for="(cell, i) in cells"
+                :key="`${cell.year}-${cell.month}-${cell.date}-${i}`"
+                class="cell"
+                :class="{
+                  dim: !cell.inCurrentMonth,
+                }"
+              >
+                <view
+                  class="cell-date"
+                  :class="{
+                    today: isToday(cell.year, cell.month, cell.date),
+                    selected: isSelected(cell.year, cell.month, cell.date),
+                  }"
+                  @tap="onCellTap(cell)"
+                >
+                  {{ cell.date }}
+                </view>
+                <view v-if="anchorsIndex === 1" class="cell-events"></view>
+              </view>
+            </view>
+          </view>
+        </swiper-item>
+      </swiper>
+    </xl-floating-panel>
+  </view>
+</template>
 
-type FirstDay = 0 | 1; // 0: Sunday-first, 1: Monday-first
+<script lang="ts" setup>
+import { ref, watch } from 'vue';
+import { onLoad } from '@dcloudio/uni-app';
 
-type event = {
-  id: number;
-  title: string;
-  description: string;
-  dtStart: number;
-  dtEnd: number;
-  // value: 'error' | 'warning';
-  value: string;
-};
-
-type CalendarEvent = {
-  date: string | number | Date;
-  events: event[];
-  status: string[];
-};
-
+// props：允许父级传入默认的年、月
 const props = withDefaults(
   defineProps<{
-    year?: number; // default: current year
-    month?: number; // 1-12, default: current month
-    firstDayOfWeek?: FirstDay; // default: Monday-first like the screenshot
-    showWeekHeader?: boolean; // default: true
-    collapsedCellHeight?: number; // rpx
-    expandedCellHeight?: number; // rpx
-    events?: CalendarEvent[];
-    maxEventsPerDay?: number;
-    // 手势阈值与折叠态指示点
-    expandThreshold?: number; // px
+    year?: number; // 默认：当前年
+    month?: number; // 1-12，默认：当前月
+    showWeekHeader?: boolean;
   }>(),
   {
-    firstDayOfWeek: 1,
     showWeekHeader: true,
-    collapsedCellHeight: 96,
-    expandedCellHeight: 160,
-    maxEventsPerDay: 2,
-    expandThreshold: 30,
   },
 );
 
 const emit = defineEmits<{
-  (e: 'update:year', value: number): void;
-  (e: 'update:month', value: number): void;
   (e: 'month-change', payload: { year: number; month: number; direction: 'prev' | 'next' }): void;
   (e: 'cell-tap', payload: { year: number; month: number; day: number }): void;
   (e: 'year-month-tap', payload: { year: number; month: number }): void;
 }>();
 
-// 年月：默认是当前年月
-const today = new Date();
-const viewYear = computed(() => props.year ?? today.getFullYear());
-const viewMonth = computed(() => props.month ?? today.getMonth() + 1); // 1-12
+const weekdayLabels = ['一', '二', '三', '四', '五', '六', '日'];
 
-// 星期：默认是周一到周日
-const weekdayLabels = computed(() =>
-  props.firstDayOfWeek === 0
-    ? ['日', '一', '二', '三', '四', '五', '六']
-    : ['一', '二', '三', '四', '五', '六', '日'],
-);
+const height = ref<number>(0);
+const windowHeight = ref<number>(0);
+const anchorsIndex = ref<number>(0);
+const anchors = ref<number[]>([]);
 
-// 获取每个月的天数
-function getMonthDayCount(year: number, monthOneBased: number): number {
-  return new Date(year, monthOneBased, 0).getDate();
+onLoad(() => {
+  windowHeight.value = uni.getWindowInfo().windowHeight;
+  anchors.value = [Math.round(0.4 * windowHeight.value), Math.round(0.7 * windowHeight.value)];
+  height.value = anchors.value[anchorsIndex.value];
+});
+
+const onHeightChange = (payload: { height: number; index: number }) => {
+  anchorsIndex.value = payload.index;
+};
+
+// 基准年月：优先使用 props，否则取系统当前
+const now = new Date();
+const baseYear = ref<number>(props.year ?? now.getFullYear());
+const baseMonth = ref<number>(props.month ?? now.getMonth() + 1); // 1-12
+
+// 三槽位 swiper 索引
+const currentIndex = ref<number>(1);
+const prevIndexRef = ref<number>(1);
+
+// 单元格类型定义与列表
+type DayCell = {
+  year: number;
+  month: number; // 1-12
+  date: number; // 1-31
+  inCurrentMonth: boolean;
+};
+
+type MonthCells = DayCell[]; // 以 6 行 * 7 列（42 格）为一页
+
+const list = ref<MonthCells[]>([]);
+
+// 选中态（只记录一个日期，可拓展成多选）
+const selected = ref<{ year: number; month: number; date: number } | null>(null);
+
+function isToday(y: number, m: number, d: number): boolean {
+  const t = new Date();
+  return t.getFullYear() === y && t.getMonth() + 1 === m && t.getDate() === d;
 }
-const monthDayCount = computed(() => getMonthDayCount(viewYear.value, viewMonth.value));
 
-// 计算需要填充的空格数
-const leadingEmptyCount = computed(() => {
-  // 该月 1 号的星期（0=周日…6=周六）
-  const firstDayJs = new Date(viewYear.value, viewMonth.value - 1, 1).getDay();
-  // 需要把 JS 的“周日=0”体系映射为“周一=0”。映射公式：(firstDayJs + 6) % 7
-  return props.firstDayOfWeek === 1 ? (firstDayJs + 6) % 7 : firstDayJs;
-});
+function isSelected(y: number, m: number, d: number): boolean {
+  if (!selected.value) return false;
+  const s = selected.value;
+  return s.year === y && s.month === m && s.date === d && !isToday(y, m, d);
+}
 
-// 计算格子数
-const totalCells = computed(() => {
-  const used = leadingEmptyCount.value + monthDayCount.value;
-  if (used <= 28) return 28; // 4 rows
-  if (used <= 35) return 35; // 5 rows
-  return 42; // 6 rows max
-});
-type CalendarCell = { dayNumber: number | null };
-const cells = computed<CalendarCell[]>(() => {
-  const result: CalendarCell[] = Array.from({ length: totalCells.value }, () => ({
-    dayNumber: null,
-  }));
-  for (let i = 0; i < monthDayCount.value; i++) {
-    result[leadingEmptyCount.value + i].dayNumber = i + 1;
+function onCellTap(cell: DayCell) {
+  selected.value = { year: cell.year, month: cell.month, date: cell.date };
+  emit('cell-tap', { year: cell.year, month: cell.month, day: cell.date });
+}
+
+function onYearMonthTap() {
+  emit('year-month-tap', { year: baseYear.value, month: baseMonth.value });
+}
+
+function shiftYearMonth(y: number, m: number, delta: number): { year: number; month: number } {
+  // delta 可为正负，表示偏移多少个月
+  let total = y * 12 + (m - 1) + delta; // 归一到 0 基
+  const newYear = Math.floor(total / 12);
+  const newMonth = (total % 12) + 1;
+  return { year: newYear, month: newMonth };
+}
+
+function daysInMonth(y: number, m: number): number {
+  return new Date(y, m, 0).getDate();
+}
+
+function firstDayWeekIndex(y: number, m: number): number {
+  // 以周一为 0，周日为 6（便于 7 列布局）
+  const jsWeek = new Date(y, m - 1, 1).getDay(); // 0-6，周日-周六
+  return (jsWeek + 6) % 7;
+}
+
+function buildMonthCells(y: number, m: number): MonthCells {
+  const cells: MonthCells = [];
+  const curMonthDays = daysInMonth(y, m);
+  const prevYM = shiftYearMonth(y, m, -1);
+  const nextYM = shiftYearMonth(y, m, 1);
+  const prevMonthDays = daysInMonth(prevYM.year, prevYM.month);
+
+  const startOffset = firstDayWeekIndex(y, m); // 当月 1 号在周几（以周一为 0）
+
+  // 填充上月补位
+  for (let i = startOffset - 1; i >= 0; i--) {
+    cells.push({
+      year: prevYM.year,
+      month: prevYM.month,
+      date: prevMonthDays - i,
+      inCurrentMonth: false,
+    });
   }
-  return result;
-});
 
-// 事件映射（当前月）
-const eventsByDay = computed(() => {
-  const map: Record<number, { events: event[]; status: string[] }> = {};
-  (props.events ?? []).forEach((evt) => {
-    const d = new Date(evt.date as any);
-    // 判断是当月
-    if (
-      !Number.isNaN(d.getTime()) &&
-      d.getFullYear() === viewYear.value &&
-      d.getMonth() + 1 === viewMonth.value
-    ) {
-      // 第几天
-      const day = d.getDate();
-      map[day] = {
-        events: evt.events,
-        status: evt.status,
-      };
+  // 填充当月
+  for (let d = 1; d <= curMonthDays; d++) {
+    cells.push({ year: y, month: m, date: d, inCurrentMonth: true });
+  }
+
+  // 填充下月补位，直到 42 格
+  let tail = 42 - cells.length;
+  for (let d = 1; d <= tail; d++) {
+    cells.push({ year: nextYM.year, month: nextYM.month, date: d, inCurrentMonth: false });
+  }
+  return cells;
+}
+
+// 初始化三槽位列表：prev / current / next
+function initList() {
+  const prev = shiftYearMonth(baseYear.value, baseMonth.value, -1);
+  const next = shiftYearMonth(baseYear.value, baseMonth.value, 1);
+  list.value = [
+    buildMonthCells(prev.year, prev.month),
+    buildMonthCells(baseYear.value, baseMonth.value),
+    buildMonthCells(next.year, next.month),
+  ];
+}
+
+initList();
+
+// 外部变更 year/month 时，同步内部基准年月并重建列表
+watch(
+  () => [props.year, props.month] as const,
+  (nv) => {
+    const y = nv[0];
+    const m = nv[1];
+    if (typeof y === 'number' && typeof m === 'number') {
+      baseYear.value = y;
+      baseMonth.value = m;
+      initList();
     }
-  });
-  return map;
-});
-
-// 下滑展开，上滑收起（本地受控）
-const isExpanded = ref(false);
-let touchStartY = 0;
-let lastMoveY = 0;
-function onTouchStart(e: any) {
-  const t = e.touches?.[0] || e.changedTouches?.[0];
-  touchStartY = t?.clientY ?? 0;
-  lastMoveY = touchStartY;
-}
-function onTouchMove(e: any) {
-  const t = e.touches?.[0] || e.changedTouches?.[0];
-  lastMoveY = t?.clientY ?? lastMoveY;
-}
-function onTouchEnd(e: any) {
-  const t = e.changedTouches?.[0] || e.touches?.[0];
-  const endY = t?.clientY ?? lastMoveY;
-  const deltaY = endY - touchStartY;
-  // 超过此位移才触发展开/收起
-  const threshold = props.expandThreshold;
-  if (Math.abs(deltaY) > threshold) {
-    // 下滑展开
-    if (deltaY > 0) isExpanded.value = true;
-    // 上滑收起
-    else isExpanded.value = false;
-  }
-}
-
-const currentCellHeight = computed(() =>
-  isExpanded.value ? props.expandedCellHeight : props.collapsedCellHeight,
+  },
 );
 
-// 判断是否是今天
-const isToday = (day: number | null) => {
-  if (!day) return false;
-  return (
-    viewYear.value === today.getFullYear() &&
-    viewMonth.value === today.getMonth() + 1 &&
-    day === today.getDate()
-  );
-};
-
-// 头部左右切换月份（由父组件 v-model:year / v-model:month 接管）
-function setYearMonth(y: number, m: number, direction: 'prev' | 'next') {
-  emit('update:year', y);
-  emit('update:month', m);
-  emit('month-change', { year: y, month: m, direction });
-}
-function onPrevMonth() {
-  let y = viewYear.value;
-  let m = viewMonth.value - 1;
-  if (m < 1) {
-    m = 12;
-    y -= 1;
+const onChange = (e: any) => {
+  const cur = e.detail.current as number;
+  const old = prevIndexRef.value;
+  const forward = (old + 1) % 3;
+  const backward = (old + 2) % 3;
+  if (cur === forward) {
+    // 进入下一月
+    const nextYM = shiftYearMonth(baseYear.value, baseMonth.value, 1);
+    baseYear.value = nextYM.year;
+    baseMonth.value = nextYM.month;
+    emit('month-change', { year: baseYear.value, month: baseMonth.value, direction: 'next' });
+    // 复用右侧槽位作为“新的 next”
+    const slot = (cur + 1) % 3;
+    const newNext = shiftYearMonth(baseYear.value, baseMonth.value, 1);
+    list.value[slot] = buildMonthCells(newNext.year, newNext.month);
+  } else if (cur === backward) {
+    // 进入上一月
+    const prevYM = shiftYearMonth(baseYear.value, baseMonth.value, -1);
+    baseYear.value = prevYM.year;
+    baseMonth.value = prevYM.month;
+    emit('month-change', { year: baseYear.value, month: baseMonth.value, direction: 'prev' });
+    // 复用左侧槽位作为“新的 prev”
+    const slot = (cur + 2) % 3;
+    const newPrev = shiftYearMonth(baseYear.value, baseMonth.value, -1);
+    list.value[slot] = buildMonthCells(newPrev.year, newPrev.month);
   }
-  setYearMonth(y, m, 'prev');
-}
-function onNextMonth() {
-  let y = viewYear.value;
-  let m = viewMonth.value + 1;
-  if (m > 12) {
-    m = 1;
-    y += 1;
-  }
-  setYearMonth(y, m, 'next');
-}
-
-const onCellTap = (day: number | null) => {
-  if (!day) return;
-  emit('cell-tap', { year: viewYear.value, month: viewMonth.value, day });
-};
-
-const onYearMonthTap = () => {
-  emit('year-month-tap', { year: viewYear.value, month: viewMonth.value });
+  prevIndexRef.value = cur;
+  currentIndex.value = cur;
 };
 </script>
 
-<template>
-  <view
-    class="xl-calendar"
-    @touchstart.passive.stop="onTouchStart"
-    @touchmove.stop.prevent="onTouchMove"
-    @touchend.passive.stop="onTouchEnd"
-  >
-    <slot name="header">
-      <view class="xl-calendar__header">
-        <view class="header-left">
-          <view class="xl-calendar__header-left" @tap="onPrevMonth">&lt;</view>
-          <view class="xl-calendar__header-year-month" @tap="onYearMonthTap"> {{ viewYear }}年{{ viewMonth }}月 </view>
-          <view class="xl-calendar__header-right" @tap="onNextMonth">&gt;</view>
-        </view>
-        <view class="header-right">
-          <view class="xl-calendar__header-right-item">
-            <view class="xl-calendar__header-right-item-dot"></view>
-            <view class="xl-calendar__header-right-item-text">值班</view>
-          </view>
-          <view class="xl-calendar__header-right-item">
-            <view class="xl-calendar__header-right-item-dot"></view>
-            <view class="xl-calendar__header-right-item-text">其他事项</view>
-          </view>
-        </view>
-      </view>
-    </slot>
-
-    <view v-if="showWeekHeader" class="xl-calendar__week">
-      <view v-for="w in weekdayLabels" :key="w" class="xl-calendar__week-item">{{ w }}</view>
-    </view>
-
-    <view class="xl-calendar__grid" :style="{ gridAutoRows: currentCellHeight + 'rpx' }">
-      <view
-        v-for="(cell, idx) in cells"
-        :key="idx"
-        :class="['xl-calendar__cell', !cell.dayNumber ? 'is-empty' : '']"
-        @tap="onCellTap(cell.dayNumber)"
-      >
-        <template v-if="cell.dayNumber">
-          <text :class="{ 'xl-calendar__day': true, 'is-today': isToday(cell.dayNumber) }">
-            {{ cell.dayNumber }}
-          </text>
-          <view class="xl-calendar__events">
-            <slot :isExpanded="isExpanded" :events="eventsByDay[cell.dayNumber]">
-              <template v-if="isExpanded">
-                <view
-                  v-for="(evt, eidx) in (eventsByDay[cell.dayNumber]?.events || []).slice(
-                    0,
-                    maxEventsPerDay,
-                  )"
-                  :key="evt.id ?? eidx"
-                  class="xl-calendar__event"
-                >
-                  {{ evt.title?.slice(0, 4) }}
-                </view>
-              </template>
-              <template v-else>
-                <view class="xl-calendar__dots">
-                  <view
-                    v-for="status in eventsByDay[cell.dayNumber]?.status"
-                    :key="status"
-                    :class="['xl-calendar__dot', status]"
-                  />
-                </view>
-              </template>
-            </slot>
-          </view>
-        </template>
-      </view>
-    </view>
-
-    <!-- 拖拽提示条：下边框 + 居中的小圆柱 -->
-    <view
-      class="xl-calendar__drag-handle"
-      @touchstart.stop="onTouchStart"
-      @touchmove.stop.prevent="onTouchMove"
-      @touchend.stop="onTouchEnd"
-    >
-      <view class="xl-calendar__drag-bar" />
-    </view>
-  </view>
-</template>
-
 <style lang="scss" scoped>
-.xl-calendar {
+.swiper {
+  height: 100%;
+}
+.swiper-item {
+  height: 100%;
   display: flex;
   flex-direction: column;
 }
-
+.grid {
+  flex: 1 0 0;
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  grid-auto-rows: 1fr;
+  gap: 8rpx;
+}
+.dim {
+  color: #999;
+}
+.cell {
+  display: flex;
+  flex-direction: column;
+}
+.cell-date {
+  flex: 1 0 0;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 8rpx;
+}
+.cell-date.today {
+  background: #2a6df5;
+  color: #ffffff;
+}
+.cell-date.selected {
+  outline: 2rpx solid #2a6df5;
+  outline-offset: -2rpx;
+  background: transparent;
+  color: inherit;
+}
+.cell-events {
+  height: 60rpx;
+}
 .xl-calendar__week {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   column-gap: 8rpx;
   margin-bottom: 12rpx;
 }
-
-/* 头部样式优化：左侧不拉伸，右侧说明项靠右对齐 */
-.xl-calendar__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 8rpx 12rpx;
-}
-
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 12rpx;
-  flex: 0 0 auto; /* 不占满，保持紧凑 */
-}
-
-.header-right {
-  display: flex;
-  align-items: center;
-  gap: 16rpx;
-  flex: 1;
-  justify-content: flex-end;
-}
-
-.xl-calendar__header-left,
-.xl-calendar__header-right {
-  width: 44rpx;
-  height: 44rpx;
-  border-radius: 8rpx;
-  border: 1rpx solid #e5e6eb;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #1f2329;
-  background-color: #ffffff;
-}
-
-.xl-calendar__header-year-month {
-  font-size: 28rpx;
-  font-weight: 600;
-  color: #1f2329;
-}
-
-.xl-calendar__header-right-item {
-  display: flex;
-  align-items: center;
-  gap: 8rpx;
-}
-
-.xl-calendar__header-right-item-text {
-  font-size: 22rpx;
-  color: #4e5969;
-}
-
-.xl-calendar__header-right-item-dot {
-  width: 12rpx;
-  height: 12rpx;
-  border-radius: 50%;
-  background-color: #d0d3d9;
-}
-
-/* 约定第一个为红，第二个为黄 */
-.header-right .xl-calendar__header-right-item:nth-child(1) .xl-calendar__header-right-item-dot {
-  background-color: #ff4d4f;
-}
-.header-right .xl-calendar__header-right-item:nth-child(2) .xl-calendar__header-right-item-dot {
-  background-color: #faad14;
-}
-
-/* 拖拽提示区域 */
-.xl-calendar__drag-handle {
-  height: 36rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-bottom: 1rpx solid #e5e6eb;
-}
-
-.xl-calendar__drag-bar {
-  width: 96rpx;
-  height: 10rpx;
-  border-radius: 10rpx;
-  background-color: #d8dadd;
-}
-
-.xl-calendar__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12rpx 8rpx;
-}
-
-.xl-calendar__header-left,
-.xl-calendar__header-right {
-  width: 64rpx;
-  height: 64rpx;
-  border-radius: 12rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #1f2329;
-  background-color: #f5f6f8;
-}
-
-.xl-calendar__header-year-month {
-  font-size: 30rpx;
-  color: #1f2329;
-}
-
 .xl-calendar__week-item {
   height: 48rpx;
   line-height: 48rpx;
   text-align: center;
   color: #808191;
   font-size: 24rpx;
-}
-
-.xl-calendar__grid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  // 默认值，运行时通过 style 覆盖
-  grid-auto-rows: 96rpx;
-  // 设置行列间距
-  row-gap: 8rpx;
-  column-gap: 8rpx;
-}
-
-.xl-calendar__cell {
-  position: relative;
-  background-color: #ffffff;
-
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.xl-calendar__cell.is-empty {
-  background-color: transparent;
-}
-
-.xl-calendar__day {
-  height: 96rpx;
-  line-height: 96rpx;
-  font-size: 30rpx;
-  color: #1f2329;
-  text-align: center;
-  border-radius: 12rpx;
-}
-
-.xl-calendar__day.is-today {
-  color: #ffffff;
-  background-color: #007aff;
-}
-
-.xl-calendar__events {
-  display: flex;
-  flex-direction: column;
-  gap: 6rpx;
-  width: 100%;
-  margin-top: 6rpx;
-  overflow: hidden;
-}
-
-.xl-calendar__event {
-  border-radius: 8rpx;
-  font-size: 20rpx;
-  max-width: 100%;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  color: #007aff;
-  background-color: #e8f3ff;
-  text-align: center;
-}
-
-.xl-calendar__dots {
-  position: absolute;
-  bottom: 18rpx;
-  left: 0;
-  width: 100%;
-  display: flex;
-  gap: 6rpx;
-  justify-content: center;
-  padding: 6rpx 0;
-}
-
-.xl-calendar__dot {
-  width: 5rpx;
-  height: 5rpx;
-  border-radius: 50%;
-  &.error {
-    background-color: #ff4d4f;
-  }
-  &.warning {
-    background-color: #faad14;
-  }
 }
 </style>
