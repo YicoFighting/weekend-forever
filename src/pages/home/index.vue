@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { XlCalendar } from '@/components';
 import { ref } from 'vue';
 // 红色值班、黄色其他事项  error/warning
 const mockEvents = [
@@ -55,7 +54,7 @@ const onMonthChange = (payload: { year: number; month: number; direction: 'prev'
 <template>
   <xl-navbar>
     <div class="home">
-      <XlCalendar
+      <xl-calendar
         :events="mockEvents"
         :year="year"
         :month="month"

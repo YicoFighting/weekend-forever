@@ -1,32 +1,44 @@
 <template>
-  <view class="panel">
-    <!-- <xl-floating-panel
-      v-model:height="height"
-      :anchors="anchors"
-      @heightChange="handleHeightChange"
-    >
-      <view class="inner-content">自定义锚点 {{ anchors }} - {{ height.toFixed(0) }}</view>
-    </xl-floating-panel> -->
+  <view class="history p-[10px]">
+    <wd-steps vertical dot :active="10">
+      <wd-step v-for="value in 10" :key="value">
+        <template #title> 2025-09-29 {{ value }}:00:00 </template>
+        <template #description>
+          <view class="w-full list flex flex-col gap-4">
+            <view class="item flex justify-between items-center">
+              <view class="item-left"> 值班 </view>
+              <view class="item-split mx-[10px]">
+                <wd-icon name="arrow-right1" size="22px"></wd-icon>
+              </view>
+              <view class="item-right"> 值班 </view>
+            </view>
+            <view class="item flex justify-between items-center ]">
+              <view class="item-left"> 值班 </view>
+              <view class="item-split mx-[10px]">
+                <wd-icon name="arrow-right1" size="22px"></wd-icon>
+              </view>
+              <view class="item-right"> 值班 </view>
+            </view>
+          </view>
+        </template>
+      </wd-step>
+    </wd-steps>
   </view>
 </template>
 
-<!-- <script lang="ts" setup>
-import { ref } from 'vue';
-import { onLoad } from '@dcloudio/uni-app';
+<script lang="ts" setup></script>
 
-const height = ref<number>(0);
-const windowHeight = ref<number>(0);
-const anchors = ref<number[]>([]);
-
-const handleHeightChange = ({ height }: { height: number }) => {
-  console.log(height);
-};
-
-onLoad(() => {
-  windowHeight.value = uni.getWindowInfo().windowHeight;
-  anchors.value = [100, Math.round(0.4 * windowHeight.value), Math.round(0.7 * windowHeight.value)];
-  height.value = anchors.value[1];
-});
-</script>
-
-<style lang="scss" scoped></style> -->
+<style lang="scss" scoped>
+.history {
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.05);
+}
+.item-left,
+.item-right {
+  flex: 1 0 0;
+  text-align: left;
+  background-color: #fff;
+  height: 200rpx;
+  border-radius: 10rpx;
+}
+</style>
