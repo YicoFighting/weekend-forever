@@ -22,7 +22,10 @@
     {
       "path": "pages/home/add/index",
       "style": {
-        "navigationStyle": "custom"
+        "navigationStyle": "custom",
+        "app-plus": {
+          "popGesture": "none" // 关闭 iOS/Android 侧滑返回，避免弹框时被误触
+        }
       }
     },
     {
@@ -33,6 +36,12 @@
     },
     {
       "path": "pages/login/index",
+      "style": {
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/ai/index",
       "style": {
         "navigationStyle": "custom"
       }
@@ -55,6 +64,7 @@
     }
   },
   "tabBar": {
+    "custom": true,
     "color": "#999",
     "selectedColor": "#000",
     "backgroundColor": "#fff",
@@ -68,6 +78,10 @@
       {
         "pagePath": "pages/home/index",
         "text": "首页"
+      },
+      {
+        "pagePath": "pages/ai/index",
+        "text": "AI"
       },
       {
         "pagePath": "pages/my/index",

@@ -1,6 +1,6 @@
 <template>
   <view class="page">
-    <view>我的</view>
+    <view>AI</view>
     <!-- <xl-tabber /> -->
   </view>
 </template>

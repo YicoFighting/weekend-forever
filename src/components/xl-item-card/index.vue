@@ -46,6 +46,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import type { ItemType } from '@/types/item';
+import { onBackPress } from '@dcloudio/uni-app';
 
 const visible = defineModel<boolean>('modelValue');
 
@@ -69,6 +70,15 @@ const handleEdit = () => {
     url: `/pages/home/edit/index?id=${1}`,
   });
 };
+
+// Android 返回键 & 手势返回优先关闭弹框
+onBackPress(() => {
+  if (show.value) {
+    show.value = false;
+    return true; // 阻止默认返回上一页
+  }
+  return false; // 交给系统处理（返回上一页）
+});
 </script>
 
 <style lang="scss" scoped>

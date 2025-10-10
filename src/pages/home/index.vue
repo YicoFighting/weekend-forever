@@ -106,10 +106,12 @@ const onHistoryTap = () => {
       />
     </div>
   </xl-navbar>
+  <!-- <xl-tabber /> -->
 </template>
 
 <style lang="scss" scoped>
 .home {
   padding: 0 20rpx;
+  padding-bottom: calc(env(safe-area-inset-bottom) + 88px);
 }
 </style>

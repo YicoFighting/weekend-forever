@@ -47,7 +47,7 @@
 <script setup lang="ts">
 import dayjs from 'dayjs';
 import { reactive, ref } from 'vue';
-import { onLoad } from '@dcloudio/uni-app';
+import { onLoad, onBackPress } from '@dcloudio/uni-app';
 import type { FormInstance } from 'wot-design-uni/components/wd-form/types';
 import type { itemFormType, itemType } from '@/types/item';
 import { useGoBack } from '@/composables/useGoBack';
@@ -101,6 +101,15 @@ const handleSubmit = () => {
 onLoad((options: any) => {
   model.title = options?.title || '';
   model.remark = options?.remark || '';
+});
+
+// Android 返回键 & 手势返回优先关闭弹框
+onBackPress(() => {
+  if (show.value) {
+    show.value = false;
+    return true; // 阻止默认返回上一页
+  }
+  return false; // 交给系统处理（返回上一页）
 });
 </script>
 

@@ -13,9 +13,17 @@ const httpInterceptor = {
     }
     // 2. 请求超时
     options.timeout = 10000;
-    // 3. 添加小程序端请求头标识
+    // 3. 添加端标识
+    // 条件编译：打到不同平台时仅保留对应分支，避免逻辑短路错误
+    let platform: string = 'h5';
+    // #ifdef MP-WEIXIN
+    platform = 'miniapp';
+    // #endif
+    // #ifdef APP-PLUS
+    platform = 'app';
+    // #endif
     options.header = {
-      'source-client': 'miniapp',
+      'source-client': platform,
       ...options.header,
     };
     // 4. 添加 token 请求头标识

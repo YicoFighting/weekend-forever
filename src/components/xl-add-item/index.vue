@@ -4,6 +4,7 @@
     safe-area-inset-bottom
     position="right"
     custom-class="remind"
+    :mask-closable="false"
     @close="close"
   >
     <view class="remind-content">
