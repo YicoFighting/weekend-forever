@@ -53,6 +53,9 @@ importers:
       '@dcloudio/uni-quickapp-webview':
         specifier: 3.0.0-4030620241128001
         version: 3.0.0-4030620241128001(postcss@8.5.6)(rollup@4.52.3)(vue@3.5.22(typescript@4.9.5))
+      dayjs:
+        specifier: ^1.11.18
+        version: 1.11.18
       lunar-javascript:
         specifier: ^1.7.4
         version: 1.7.4
@@ -2291,6 +2294,9 @@ packages:
   data-urls@2.0.0:
     resolution: {integrity: sha512-X5eWTSXO/BJmpdIKCRuKUgSCgAN0OwliVK3yPKbwIWU1Tdw5BRajxlzMidvh+gwko9AfQ9zIj52pzF91Q3YAvQ==}
     engines: {node: '>=10'}
+
+  dayjs@1.11.18:
+    resolution: {integrity: sha512-zFBQ7WFRvVRhKcWoUh+ZA1g2HVgUbsZm9sbddh8EC5iv93sui8DVVz1Npvz+r6meo9VKfa8NyLWBsQK1VvIKPA==}
 
   de-indent@1.0.2:
     resolution: {integrity: sha512-e/1zu3xH5MQryN2zdVaF0OrdNLUbvWxzMbi+iNA6Bky7l1RoP8a2fIbRocyHclXt/arDrrR6lL3TqFD9pMQTsg==}
@@ -7489,6 +7495,8 @@ snapshots:
       abab: 2.0.6
       whatwg-mimetype: 2.3.0
       whatwg-url: 8.7.0
+
+  dayjs@1.11.18: {}
 
   de-indent@1.0.2: {}
 

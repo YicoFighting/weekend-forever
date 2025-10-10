@@ -1,36 +1,40 @@
 <template>
   <view class="history p-[10px]">
     <wd-steps vertical dot :active="10">
-      <wd-step v-for="value in 10" :key="value">
+      <wd-step v-for="value in 5" :key="value">
         <template #title> 2025-09-29 {{ value }}:00:00 </template>
         <template #description>
-          <view class="w-full list flex flex-col gap-4">
-            <view class="item flex justify-between items-center">
-              <view class="item-left"> 值班 </view>
-              <view class="item-split mx-[10px]">
-                <wd-icon name="arrow-right1" size="22px"></wd-icon>
-              </view>
-              <view class="item-right"> 值班 </view>
-            </view>
-            <view class="item flex justify-between items-center ]">
-              <view class="item-left"> 值班 </view>
-              <view class="item-split mx-[10px]">
-                <wd-icon name="arrow-right1" size="22px"></wd-icon>
-              </view>
-              <view class="item-right"> 值班 </view>
-            </view>
-          </view>
+          <!-- 先添加换班历史，然后再添加值班 -->
+          <ul class="flex flex-col gap-2">
+            <li
+              class="flex flex-col border border-solid border-gray-300 rounded-md p-2 cursor-pointer"
+              @tap="handleVisible"
+            >
+              <h4 class="text-base">标题</h4>
+              <text class="text-sm">内容</text>
+            </li>
+          </ul>
         </template>
       </wd-step>
     </wd-steps>
+
+    <xl-item-card v-model="visible"></xl-item-card>
   </view>
 </template>
 
-<script lang="ts" setup></script>
+<script lang="ts" setup>
+import { ref } from 'vue';
+
+const visible = ref(false);
+
+const handleVisible = () => {
+  visible.value = true;
+};
+</script>
 
 <style lang="scss" scoped>
 .history {
-  height: 100%;
+  height: 100vh;
   background-color: rgba(0, 0, 0, 0.05);
 }
 .item-left,

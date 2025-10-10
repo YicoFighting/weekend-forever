@@ -16,6 +16,12 @@
     {
       "path": "pages/home/history/index",
       "style": {
+        "navigationBarTitleText": "历史记录"
+      }
+    },
+    {
+      "path": "pages/home/add/index",
+      "style": {
         "navigationStyle": "custom"
       }
     },

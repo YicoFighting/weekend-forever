@@ -49,19 +49,34 @@ function handleConfirm(payload: { value: number }) {
 const onMonthChange = (payload: { year: number; month: number; direction: 'prev' | 'next' }) => {
   value.value = new Date(payload.year, payload.month - 1, 1, 0, 0, 0, 0).getTime();
 };
+
+const onAddTap = () => {
+  uni.navigateTo({
+    url: '/pages/home/add/index',
+  });
+};
+const onHistoryTap = () => {
+  uni.navigateTo({
+    url: '/pages/home/history/index',
+  });
+};
 </script>
 
 <template>
   <xl-navbar>
     <div class="home">
-      <xl-calendar
+      <div class="icon flex justify-end gap-2">
+        <wd-icon name="add" size="22px" @tap="onAddTap"></wd-icon>
+        <wd-icon name="history" size="22px" @tap="onHistoryTap"></wd-icon>
+      </div>
+      <!-- <xl-calendar
         :events="mockEvents"
         :year="year"
         :month="month"
         @cell-tap="onCellTap"
         @month-change="onMonthChange"
         @year-month-tap="onYearMonthTap"
-      />
+      /> -->
       <!-- 批量设置的话：直接多选日期即可 -->
       <!-- <view class="content">
       <view class="content-item">

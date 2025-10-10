@@ -54,6 +54,7 @@
     "@dcloudio/uni-mp-weixin": "3.0.0-4030620241128001",
     "@dcloudio/uni-mp-xhs": "3.0.0-4030620241128001",
     "@dcloudio/uni-quickapp-webview": "3.0.0-4030620241128001",
+    "dayjs": "^1.11.18",
     "lunar-javascript": "^1.7.4",
     "pinia": "^3.0.3",
     "pinia-plugin-persistedstate": "^4.5.0",
