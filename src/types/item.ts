@@ -12,6 +12,7 @@ export interface ItemType {
 
 // 新建/编辑日程的表单数据模型
 export interface ItemFormType {
+  id?: number | string;
   title: string;
   allDay: boolean;
   startTime: TimestampMs; // 毫秒时间戳

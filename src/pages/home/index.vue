@@ -69,27 +69,33 @@ const onHistoryTap = () => {
         <wd-icon name="add" size="22px" @tap="onAddTap"></wd-icon>
         <wd-icon name="history" size="22px" @tap="onHistoryTap"></wd-icon>
       </div>
-      <!-- <xl-calendar
+      <xl-calendar
         :events="mockEvents"
         :year="year"
         :month="month"
         @cell-tap="onCellTap"
         @month-change="onMonthChange"
         @year-month-tap="onYearMonthTap"
-      /> -->
+      />
       <!-- 批量设置的话：直接多选日期即可 -->
-      <!-- <view class="content">
-      <view class="content-item">
-        <view class="content-item-title">
-          <text>值班</text>
+      <view class="content">
+        <view class="content-item">
+          <view class="content-item-title">
+            <text>值班</text>
+          </view>
+          <wd-card title="经营分析">
+            一般的，检举内容由承办的党的委员会或纪律检查委员会将处理意见或复议、复查结论同申诉人见面，听取其意见。复议、复查的结论和决定，应交给申诉人一份。
+          </wd-card>
+        </view>
+        <view class="content-item">
+          <view class="content-item-title">
+            <text>其他事项</text>
+          </view>
+          <wd-card title="经营分析">
+            一般的，检举内容由承办的党的委员会或纪律检查委员会将处理意见或复议、复查结论同申诉人见面，听取其意见。复议、复查的结论和决定，应交给申诉人一份。
+          </wd-card>
         </view>
       </view>
-      <view class="content-item">
-        <view class="content-item-title">
-          <text>其他事项</text>
-        </view>
-      </view>
-    </view> -->
 
       <wd-calendar
         ref="calendar"

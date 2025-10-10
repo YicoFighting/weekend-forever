@@ -16,7 +16,7 @@
     {
       "path": "pages/home/history/index",
       "style": {
-        "navigationBarTitleText": "历史记录"
+        "navigationStyle": "custom"
       }
     },
     {
@@ -26,7 +26,19 @@
       }
     },
     {
+      "path": "pages/home/edit/index",
+      "style": {
+        "navigationStyle": "custom"
+      }
+    },
+    {
       "path": "pages/login/index",
+      "style": {
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/my/index",
       "style": {
         "navigationStyle": "custom"
       }
@@ -41,5 +53,26 @@
       // 禁止页面回弹效果
       "bounce": "none"
     }
+  },
+  "tabBar": {
+    "color": "#999",
+    "selectedColor": "#000",
+    "backgroundColor": "#fff",
+    "borderStyle": "black",
+    "position": "bottom",
+    "fontSize": "10px",
+    "iconWidth": "20px",
+    "iconHeight": "20px",
+    "iconSize": "20px",
+    "list": [
+      {
+        "pagePath": "pages/home/index",
+        "text": "首页"
+      },
+      {
+        "pagePath": "pages/my/index",
+        "text": "我的"
+      }
+    ]
   }
 }

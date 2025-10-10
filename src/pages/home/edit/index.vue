@@ -54,6 +54,7 @@ import { useGoBack } from '@/composables/useGoBack';
 
 const form = ref<FormInstance>();
 const model = reactive<itemFormType>({
+  id: '',
   title: '',
   allDay: false,
   startTime: Date.now(),
