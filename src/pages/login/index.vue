@@ -22,7 +22,9 @@
       <view class="agreements">
         <label class="checkbox">
           <checkbox :checked="agreed" @click.native.stop="toggleAgree" />
-          已阅读并同意《服务协议》《隐私政策》《儿童隐私政策》《运动风险须知》
+          <text>已阅读并同意</text>
+          <text class="link" @click.stop="goService">《服务协议》</text>
+          <text class="link" @click.stop="goPrivacy">《隐私政策》</text>
         </label>
       </view>
     </view>
@@ -40,6 +42,14 @@ const agreed = ref(false);
 
 const toggleAgree = () => {
   agreed.value = !agreed.value;
+};
+
+const goService = () => {
+  uni.navigateTo({ url: '/pages/agreement/service/index' });
+};
+
+const goPrivacy = () => {
+  uni.navigateTo({ url: '/pages/agreement/privacy/index' });
 };
 
 // 小程序登录：获取临时 code -> 传给后端换 token
@@ -141,7 +151,6 @@ const onMiniPhoneLogin = async (e: any) => {
   }
 };
 </script>
-
 <style scoped>
 .login-page {
   padding: 40rpx;
@@ -197,5 +206,8 @@ const onMiniPhoneLogin = async (e: any) => {
   display: flex;
   align-items: center;
   gap: 12rpx;
+}
+.link {
+  color: #2f77ff;
 }
 </style>

@@ -63,7 +63,7 @@ const onHistoryTap = () => {
 </script>
 
 <template>
-  <xl-navbar>
+  <xl-navbar title="首页">
     <div class="home">
       <div class="icon flex justify-end gap-2">
         <wd-icon name="add" size="22px" @tap="onAddTap"></wd-icon>
@@ -77,7 +77,6 @@ const onHistoryTap = () => {
         @month-change="onMonthChange"
         @year-month-tap="onYearMonthTap"
       />
-      <!-- 批量设置的话：直接多选日期即可 -->
       <view class="content">
         <view class="content-item">
           <view class="content-item-title">
@@ -106,6 +105,7 @@ const onHistoryTap = () => {
       />
     </div>
   </xl-navbar>
+
   <!-- <xl-tabber /> -->
 </template>
 

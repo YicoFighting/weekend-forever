@@ -41,6 +41,18 @@
       }
     },
     {
+      "path": "pages/agreement/service/index",
+      "style": {
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/agreement/privacy/index",
+      "style": {
+        "navigationStyle": "custom"
+      }
+    },
+    {
       "path": "pages/ai/index",
       "style": {
         "navigationStyle": "custom"
@@ -64,16 +76,9 @@
     }
   },
   "tabBar": {
-    "custom": true,
     "color": "#999",
     "selectedColor": "#000",
     "backgroundColor": "#fff",
-    "borderStyle": "black",
-    "position": "bottom",
-    "fontSize": "10px",
-    "iconWidth": "20px",
-    "iconHeight": "20px",
-    "iconSize": "20px",
     "list": [
       {
         "pagePath": "pages/home/index",

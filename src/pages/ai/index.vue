@@ -38,7 +38,7 @@ const sendTokenToH5 = () => {
 };
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .page {
   padding-bottom: calc(env(safe-area-inset-bottom) + 88px);
 }
