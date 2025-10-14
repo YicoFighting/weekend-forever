@@ -59,7 +59,7 @@
     "@uni-helper/plugin-uni": "^0.1.0",
     "dayjs": "^1.11.18",
     "lunar-javascript": "^1.7.4",
-    "pinia": "^3.0.3",
+    "pinia": "^2.1.7",
     "pinia-plugin-persistedstate": "^4.5.0",
     "vue": "^3.4.21",
     "vue-i18n": "^9.1.9",
