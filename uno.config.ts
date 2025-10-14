@@ -1,22 +1,42 @@
-import { defineConfig, presetUno } from 'unocss';
-import { presetIcons } from '@unocss/preset-icons';
+import type { Preset } from 'unocss';
 import { presetUni } from '@uni-helper/unocss-preset-uni';
+
+import {
+  defineConfig,
+  presetAttributify,
+  presetIcons,
+  transformerDirectives,
+  transformerVariantGroup,
+} from 'unocss';
 
 export default defineConfig({
   presets: [
-    presetUno(),
-    presetIcons({ scale: 1, warn: true }),
-    presetUni(), // 专为 UniApp 打造的预设
+    presetUni({
+      attributify: false,
+    }),
+    presetIcons({
+      scale: 1.2,
+      warn: true,
+      extraProperties: {
+        display: 'inline-block',
+        'vertical-align': 'middle',
+      },
+    }),
+    // 支持css class属性化
+    presetAttributify(),
   ],
-  // 可选：自定义规则
-  rules: [
-    ['bg-primary', { 'background-color': '#007AFF' }], // 自定义主背景色
+  transformers: [
+    // 启用指令功能：主要用于支持 @apply、@screen 和 theme() 等 CSS 指令
+    transformerDirectives(),
+    // 启用 () 分组功能
+    // 支持css class组合，eg: `<div class="hover:(bg-gray-400 font-medium) font-(light mono)">测试 unocss</div>`
+    transformerVariantGroup(),
   ],
-  // 主题配置
-  theme: {
-    colors: {
-      primary: '#007AFF',
-      secondary: '#6C757D',
+  shortcuts: [
+    {
+      center: 'flex justify-center items-center',
     },
-  },
+  ],
+  rules: [],
+  theme: {},
 });
