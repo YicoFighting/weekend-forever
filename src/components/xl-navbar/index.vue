@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, type CSSProperties } from 'vue';
 // 获取屏幕边界到安全区域距离
 const { safeAreaInsets } = uni.getWindowInfo();
 let navigationBarHeight = '64rpx';
@@ -13,11 +13,13 @@ const props = withDefaults(
     title: string;
     showBack: boolean;
     safeAreaInsetBottom: boolean;
+    navBarStyle: CSSProperties;
   }>(),
   {
     title: '',
     showBack: false,
     safeAreaInsetBottom: false,
+    navBarStyle: () => ({}),
   },
 );
 
@@ -38,10 +40,11 @@ const onBack = () => {
       paddingBottom: props.safeAreaInsetBottom ? safeAreaInsets!.bottom + 'px' : '0',
     }"
   >
+    <!-- 展示标题与返回 -->
     <view
       v-if="showCapsule"
-      class="navbar-capsule w-full flex items-center"
-      :style="{ height: navigationBarHeight }"
+      class="navbar-capsule w-full flex items-center text-[32rpx] p-[7px]"
+      :style="{ height: navigationBarHeight, ...navBarStyle }"
     >
       <view class="back-btn w-[22px] h-full flex items-center" v-if="props.showBack">
         <wd-icon name="chevron-left" size="22px" @tap="onBack"></wd-icon>

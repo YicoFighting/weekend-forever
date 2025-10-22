@@ -9,5 +9,8 @@ export default defineConfig(async () => {
         '@': '/src',
       },
     },
+    server: {
+      port: 3000,
+    },
   };
 });

@@ -106,10 +106,12 @@ const handleTouchCancel = (e: any) => {
 }
 .xl-floating-panel {
   width: 100%;
-
   touch-action: none;
   will-change: height;
   transition: height 300ms cubic-bezier(0.18, 0.89, 0.32, 1.28);
+
+  display: flex;
+  flex-direction: column;
 }
 
 .xl-floating-panel__header {

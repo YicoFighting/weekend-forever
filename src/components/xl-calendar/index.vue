@@ -1,7 +1,12 @@
 <template>
   <view class="xl-calendar">
     <xl-floating-panel v-model:height="height" :anchors="anchors" @heightChange="onHeightChange">
-      <text @tap="onYearMonthTap">{{ baseMonth }} 月</text>
+      <view class="header flex justify-between items-center">
+        <text @tap="onYearMonthTap" class="text-[#333] font-600">
+          {{ `${baseYear}年${baseMonth}月` }}
+        </text>
+        <slot name="header"></slot>
+      </view>
       <swiper class="swiper" :current="currentIndex" circular @change="onChange">
         <swiper-item v-for="(cells, idx) in list" :key="idx">
           <view class="swiper-item">
@@ -13,23 +18,29 @@
             <view class="grid">
               <view
                 v-for="(cell, i) in cells"
-                :key="`${cell.year}-${cell.month}-${cell.date}-${i}`"
-                class="cell"
+                :key="`${cell.year}-${cell.month}-${cell.date}`"
+                class="cell relative"
                 :class="{
                   dim: !cell.inCurrentMonth,
+                  'last-cell': i % 7 === 6,
+                  duty: isDuty(cell.year, cell.month, cell.date),
                 }"
               >
+                <view class="dot" v-if="isOther(cell.year, cell.month, cell.date)"></view>
                 <view
                   class="cell-date"
-                  :class="{
-                    today: isToday(cell.year, cell.month, cell.date),
-                    selected: isSelected(cell.year, cell.month, cell.date),
-                  }"
+                  :class="{ today: isToday(cell.year, cell.month, cell.date) }"
                   @tap="onCellTap(cell)"
                 >
-                  {{ cell.date }}
+                  {{ isToday(cell.year, cell.month, cell.date) ? '今' : cell.date }}
                 </view>
-                <view v-if="anchorsIndex === 1" class="cell-events"></view>
+                <text
+                  v-if="anchorsIndex === 1 && hasEvents(cell.year, cell.month, cell.date)"
+                  class="cell-events"
+                  @tap="onEventTap(cell.year, cell.month, cell.date)"
+                >
+                  {{ hasEvents(cell.year, cell.month, cell.date) }}
+                </text>
               </view>
             </view>
           </view>
@@ -43,15 +54,25 @@
 import { ref, watch } from 'vue';
 import { onLoad } from '@dcloudio/uni-app';
 
-// props：允许父级传入默认的年、月
+interface Events {
+  id: number;
+  title: string;
+  description: string;
+  dtStart: number;
+  dtEnd: number;
+  value: string;
+}
+
 const props = withDefaults(
   defineProps<{
     year?: number; // 默认：当前年
     month?: number; // 1-12，默认：当前月
     showWeekHeader?: boolean;
+    events?: Record<string, Events[]>;
   }>(),
   {
     showWeekHeader: true,
+    events: () => ({}),
   },
 );
 
@@ -59,6 +80,8 @@ const emit = defineEmits<{
   (e: 'month-change', payload: { year: number; month: number; direction: 'prev' | 'next' }): void;
   (e: 'cell-tap', payload: { year: number; month: number; day: number }): void;
   (e: 'year-month-tap', payload: { year: number; month: number }): void;
+  (e: 'event-tap', payload: { year: number; month: number; day: number }): void;
+  (e: 'height-change', payload: number): void;
 }>();
 
 const weekdayLabels = ['一', '二', '三', '四', '五', '六', '日'];
@@ -69,13 +92,17 @@ const anchorsIndex = ref<number>(0);
 const anchors = ref<number[]>([]);
 
 onLoad(() => {
+  // 获取窗口高度
   windowHeight.value = uni.getWindowInfo().windowHeight;
-  anchors.value = [Math.round(0.4 * windowHeight.value), Math.round(0.7 * windowHeight.value)];
+  // 锚定高度
+  anchors.value = [Math.round(0.55 * windowHeight.value), Math.round(0.7 * windowHeight.value)];
+  // 设置初始高度
   height.value = anchors.value[anchorsIndex.value];
 });
 
 const onHeightChange = (payload: { height: number; index: number }) => {
   anchorsIndex.value = payload.index;
+  emit('height-change', payload.height);
 };
 
 // 基准年月：优先使用 props，否则取系统当前
@@ -95,52 +122,59 @@ type DayCell = {
   inCurrentMonth: boolean;
 };
 
-type MonthCells = DayCell[]; // 以 6 行 * 7 列（42 格）为一页
+type MonthCells = DayCell[];
 
 const list = ref<MonthCells[]>([]);
 
-// 选中态（只记录一个日期，可拓展成多选）
-const selected = ref<{ year: number; month: number; date: number } | null>(null);
+const isDuty = (year: number, month: number, date: number): boolean => {
+  return props.events[`${year}-${month}-${date}`]?.some((event) => event.value === 'duty');
+};
 
-function isToday(y: number, m: number, d: number): boolean {
-  const t = new Date();
-  return t.getFullYear() === y && t.getMonth() + 1 === m && t.getDate() === d;
-}
+const isOther = (year: number, month: number, date: number): boolean => {
+  return props.events[`${year}-${month}-${date}`]?.some((event) => event.value === 'other');
+};
 
-function isSelected(y: number, m: number, d: number): boolean {
-  if (!selected.value) return false;
-  const s = selected.value;
-  return s.year === y && s.month === m && s.date === d && !isToday(y, m, d);
-}
+const isToday = (year: number, month: number, date: number): boolean => {
+  const today = new Date();
+  return today.getFullYear() === year && today.getMonth() + 1 === month && today.getDate() === date;
+};
 
-function onCellTap(cell: DayCell) {
-  selected.value = { year: cell.year, month: cell.month, date: cell.date };
+const hasEvents = (year: number, month: number, date: number): string => {
+  const events = props.events[`${year}-${month}-${date}`] || [];
+  return events[0]?.title?.slice(0, 2);
+};
+
+const onCellTap = (cell: DayCell) => {
   emit('cell-tap', { year: cell.year, month: cell.month, day: cell.date });
-}
+};
 
-function onYearMonthTap() {
+const onEventTap = (year: number, month: number, date: number) => {
+  emit('event-tap', { year: year, month: month, day: date });
+};
+
+const onYearMonthTap = () => {
   emit('year-month-tap', { year: baseYear.value, month: baseMonth.value });
-}
+};
 
-function shiftYearMonth(y: number, m: number, delta: number): { year: number; month: number } {
+const shiftYearMonth = (y: number, m: number, delta: number): { year: number; month: number } => {
   // delta 可为正负，表示偏移多少个月
   let total = y * 12 + (m - 1) + delta; // 归一到 0 基
   const newYear = Math.floor(total / 12);
   const newMonth = (total % 12) + 1;
   return { year: newYear, month: newMonth };
-}
+};
 
-function daysInMonth(y: number, m: number): number {
+const daysInMonth = (y: number, m: number): number => {
   return new Date(y, m, 0).getDate();
-}
+};
 
-function firstDayWeekIndex(y: number, m: number): number {
+const firstDayWeekIndex = (y: number, m: number): number => {
   // 以周一为 0，周日为 6（便于 7 列布局）
   const jsWeek = new Date(y, m - 1, 1).getDay(); // 0-6，周日-周六
   return (jsWeek + 6) % 7;
-}
+};
 
-function buildMonthCells(y: number, m: number): MonthCells {
+const buildMonthCells = (y: number, m: number): MonthCells => {
   const cells: MonthCells = [];
   const curMonthDays = daysInMonth(y, m);
   const prevYM = shiftYearMonth(y, m, -1);
@@ -170,10 +204,10 @@ function buildMonthCells(y: number, m: number): MonthCells {
     cells.push({ year: nextYM.year, month: nextYM.month, date: d, inCurrentMonth: false });
   }
   return cells;
-}
+};
 
 // 初始化三槽位列表：prev / current / next
-function initList() {
+const initList = () => {
   const prev = shiftYearMonth(baseYear.value, baseMonth.value, -1);
   const next = shiftYearMonth(baseYear.value, baseMonth.value, 1);
   list.value = [
@@ -181,7 +215,7 @@ function initList() {
     buildMonthCells(baseYear.value, baseMonth.value),
     buildMonthCells(next.year, next.month),
   ];
-}
+};
 
 initList();
 
@@ -199,7 +233,7 @@ watch(
   },
 );
 
-const onChange = (e: any) => {
+const onChange = (e: UniHelper.SwiperOnChangeEvent) => {
   const cur = e.detail.current as number;
   const old = prevIndexRef.value;
   const forward = (old + 1) % 3;
@@ -231,61 +265,86 @@ const onChange = (e: any) => {
 </script>
 
 <style lang="scss" scoped>
-.swiper {
-  height: 100%;
-}
-.swiper-item {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-}
-.grid {
-  flex: 1 0 0;
-  width: 100%;
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  grid-auto-rows: 1fr;
-  gap: 8rpx;
-}
-.dim {
-  color: #999;
-}
-.cell {
-  display: flex;
-  flex-direction: column;
-}
-.cell-date {
-  flex: 1 0 0;
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  border-radius: 8rpx;
-}
-.cell-date.today {
-  background: #2a6df5;
-  color: #ffffff;
-}
-.cell-date.selected {
-  outline: 2rpx solid #2a6df5;
-  outline-offset: -2rpx;
-  background: transparent;
-  color: inherit;
-}
-.cell-events {
-  height: 60rpx;
-}
-.xl-calendar__week {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  column-gap: 8rpx;
-  margin-bottom: 12rpx;
-}
-.xl-calendar__week-item {
-  height: 48rpx;
-  line-height: 48rpx;
-  text-align: center;
-  color: #808191;
-  font-size: 24rpx;
+.xl-calendar {
+  .header {
+    padding: 32rpx 40rpx;
+  }
+  .swiper {
+    flex: 1 0 0;
+    overflow: hidden;
+    &-item {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+
+      .xl-calendar__week {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        border-top: 2rpx solid #f0f0f0;
+        border-bottom: 2rpx solid #f0f0f0;
+        &-item {
+          text-align: center;
+          color: #808191;
+          font-size: 24rpx;
+          padding: 24rpx 0;
+        }
+      }
+
+      .grid {
+        flex: 1 0 0;
+        width: 100%;
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        grid-auto-rows: 1fr;
+        border-bottom: 2rpx solid #f0f0f0;
+        .cell {
+          box-sizing: border-box;
+          display: flex;
+          flex-direction: column;
+          border-right: 2rpx solid #f0f0f0;
+          border-bottom: 2rpx solid #f0f0f0;
+          padding-bottom: 16rpx;
+          .dot {
+            position: absolute;
+            top: 12rpx;
+            right: 12rpx;
+            width: 12rpx;
+            height: 12rpx;
+            border-radius: 50%;
+            background-color: rgb(76, 175, 80);
+          }
+          .cell-date {
+            flex: 1 0 0;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+          }
+          .today {
+            color: #ff9800;
+          }
+          .cell-events {
+            margin: 0 auto;
+            color: #ff9800;
+            font-size: 20rpx;
+            text-align: center;
+            padding: 4rpx 8rpx;
+            border-radius: 8rpx;
+            background-color: rgba(255, 152, 0, 0.1);
+          }
+        }
+        .dim {
+          color: #999;
+        }
+        .last-cell {
+          border-right: none;
+        }
+        .duty {
+          background: #fff3e0;
+          color: #333;
+        }
+      }
+    }
+  }
 }
 </style>

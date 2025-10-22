@@ -1,3 +1,5 @@
+<!-- 去水印 + 弹幕 + 视频 + 音乐 + 壁纸 -->
+<!-- 小程序返回 + ui -->
 <template>
   <view class="page">
     <view>AI</view>
@@ -10,7 +12,8 @@
 import { ref } from 'vue';
 import type { H5Message, WebViewMessageEvent } from '@/types/hybrid';
 
-const h5Url = ref('http://192.168.51.79:3000');
+// const h5Url = ref('http://192.168.51.79:3000');
+const h5Url = ref('https://www.deepseek.com/');
 const token = ref('this is a token');
 
 // 接受 webview 消息

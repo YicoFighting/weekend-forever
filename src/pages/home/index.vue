@@ -1,37 +1,62 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-// 红色值班、黄色其他事项  error/warning
-const mockEvents = [
-  {
-    date: '2025-09-28',
-    events: [
-      // 展示修改历史记录
-      {
-        id: 0,
-        title: '值班',
-        description: '值班',
-        dtStart: 1727683200000,
-        dtEnd: 1727769600000,
-        value: 'error',
-      },
-      {
-        id: 1,
-        title: '打印资料',
-        description: '打印资料',
-        dtStart: 1727683200000,
-        dtEnd: 1727769600000,
-        value: 'warning',
-      },
-    ],
-    status: ['error', 'warning'],
-  },
-];
+import dayjs from 'dayjs';
+
+const mockEvents = {
+  '2025-10-20': [
+    {
+      id: 0,
+      title: '值班',
+      description: '值班',
+      dtStart: 1761062400000,
+      dtEnd: 1761148799000,
+      value: 'duty',
+    },
+    {
+      id: 1,
+      title: '打印资料',
+      description: '打印资料',
+      dtStart: 1761062400000,
+      dtEnd: 1761148799000,
+      value: 'other',
+    },
+  ],
+  '2025-10-21': [
+    {
+      id: 0,
+      title: '值班',
+      description: '值班',
+      dtStart: 1761062400000,
+      dtEnd: 1761148799000,
+      value: 'duty',
+    },
+  ],
+  '2025-10-22': [
+    {
+      id: 1,
+      title: '打印资料',
+      description: '打印资料',
+      dtStart: 1761062400000,
+      dtEnd: 1761148799000,
+      value: 'other',
+    },
+  ],
+};
 
 const now = new Date();
 const year = ref(now.getFullYear());
 const month = ref(now.getMonth() + 1);
-// 点击日期，显示对应日期的内容
+
+// 使用 dayjs 拿到当天的 xxxx年xx月xx日
+const selectedDay = ref<string>(dayjs().format('YYYY年MM月DD日'));
+
 const onCellTap = (payload: { year: number; month: number; day: number }) => {
+  selectedDay.value = dayjs(new Date(payload.year, payload.month - 1, payload.day)).format(
+    'YYYY年MM月DD日',
+  );
+};
+
+const onEventTap = (payload: { year: number; month: number; day: number }) => {
   console.log(payload);
 };
 
@@ -60,50 +85,159 @@ const onHistoryTap = () => {
     url: '/pages/home/history/index',
   });
 };
+
+// 分享
+const showShare = ref(false);
+const handleShare = (type: 'Day' | 'Month') => {
+  showShare.value = false;
+  uni.showToast({
+    title: type === 'Day' ? '分享当日值班' : '分享当月值班',
+    icon: 'success',
+  });
+};
+
+// 删除其他事项
+const handleDelete = (title: string) => {
+  uni.showToast({
+    title: '删除成功',
+    icon: 'success',
+  });
+};
+
+// 日历高度变化时
+const itemContent = ref();
+const onHeightChange = (payload: number) => {
+  const el = (itemContent.value as any)?.$el || (itemContent.value as any);
+  if (!el) return;
+  if (typeof el.scrollTo === 'function') {
+    try {
+      el.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (e) {
+      el.scrollTop = 0;
+    }
+  } else {
+    el.scrollTop = 0;
+  }
+};
+
+const onSyncTap = () => {
+  console.log('onSyncTap');
+};
 </script>
 
 <template>
-  <xl-navbar title="首页">
-    <div class="home">
-      <div class="icon flex justify-end gap-2">
-        <wd-icon name="add" size="22px" @tap="onAddTap"></wd-icon>
-        <wd-icon name="history" size="22px" @tap="onHistoryTap"></wd-icon>
-      </div>
+  <xl-navbar title="首页" :navBarStyle="{ backgroundColor: 'rgb(248, 248, 248)' }">
+    <view class="home w-full overflow-hidden">
       <xl-calendar
         :events="mockEvents"
         :year="year"
         :month="month"
         @cell-tap="onCellTap"
+        @event-tap="onEventTap"
         @month-change="onMonthChange"
         @year-month-tap="onYearMonthTap"
-      />
-      <view class="content">
-        <view class="content-item">
-          <view class="content-item-title">
-            <text>值班</text>
+        @height-change="onHeightChange"
+      >
+        <template #header>
+          <view class="icon flex justify-end gap-2">
+            <!-- 同步日历 -->
+            <!-- <wd-icon name="refresh1" size="20px" @tap="onSyncTap"></wd-icon> -->
+            <wd-icon name="history" size="20px" color="#007aff" @tap="onHistoryTap" />
           </view>
-          <wd-card title="经营分析">
-            一般的，检举内容由承办的党的委员会或纪律检查委员会将处理意见或复议、复查结论同申诉人见面，听取其意见。复议、复查的结论和决定，应交给申诉人一份。
-          </wd-card>
+        </template>
+      </xl-calendar>
+      <!-- 默认展示当天的 -->
+      <view class="item-content py-[10px]" ref="itemContent">
+        <wd-card>
+          <template #title>
+            <view class="flex justify-between items-center">
+              {{ `${selectedDay} 详情` }}
+              <wd-icon name="share" size="16px" color="#007aff" @tap="showShare = true"></wd-icon>
+            </view>
+          </template>
+          <template #default>
+            <!-- 值班信息 -->
+            <view class="title flex justify-between items-center mb-[12px]">
+              <h4 class="desc text-[32rpx] fw-600 color-[#333333]">值班信息</h4>
+              <wd-icon name="edit-outline" size="16px" color="#007aff"></wd-icon>
+            </view>
+            <view class="card bg-[#f8f9fa] p-[12px] boder-rounded-[6px] mb-[16px]">
+              <ul>
+                <li class="flex">
+                  <h4 class="title color-[#666] text-[14px]">值班类型：</h4>
+                  <p class="value color-[#333] text-[14px] fw-500">夜班</p>
+                </li>
+                <li class="flex">
+                  <h4 class="title color-[#666] text-[14px]">时间段：</h4>
+                  <p class="value color-[#333] text-[14px] fw-500">18:00 - 06:00</p>
+                </li>
+              </ul>
+            </view>
+
+            <!-- 其他事项 -->
+            <view class="title flex justify-between items-center mb-[12px]">
+              <h4 class="desc text-[32rpx] fw-600 color-[#333333]">其他事项</h4>
+              <wd-icon name="add-circle1" size="16px" color="#007aff"></wd-icon>
+            </view>
+
+            <view class="flex flex-col gap-[16px] pb-[16px]">
+              <view class="card bg-[#f8f9fa] p-[12px] boder-rounded-[6px] flex justify-between">
+                <ul>
+                  <li class="desc color-[#333333] text-[14px]">查房</li>
+                  <li class="time color-[#666666] text-[12px]">18:00 - 06:00</li>
+                </ul>
+                <wd-icon
+                  name="delete1"
+                  size="14px"
+                  color="#ff3b30"
+                  @tap="handleDelete('查房')"
+                ></wd-icon>
+              </view>
+            </view>
+
+            <!-- <view class="no-events py-[24px] text-[#999] text-[14px] text-center">
+              暂无其他事项
+            </view> -->
+          </template>
+        </wd-card>
+      </view>
+    </view>
+
+    <wd-calendar
+      ref="calendar"
+      :with-cell="false"
+      type="month"
+      v-model="value"
+      @confirm="handleConfirm"
+    />
+
+    <wd-action-sheet v-model="showShare">
+      <view class="share p-[32rpx]">
+        <h4 class="text-[16px] text-center color-[#333333] fw-600 mb-[32rpx]">分享值班信息</h4>
+        <view class="share-options gap-[24rpx] mb-[32rpx] flex flex-col">
+          <view
+            class="share-option flex items-center p-[32rpx] bg-[#f8f9fa] boder-rounded-[12rpx] gap-[24rpx]"
+            @tap="handleShare('Day')"
+          >
+            <wd-icon name="calendar" size="20px" color="#007aff"></wd-icon>
+            <text>分享当日值班</text>
+          </view>
+          <view
+            class="share-option flex items-center p-[32rpx] bg-[#f8f9fa] boder-rounded-[12rpx] gap-[24rpx]"
+            @tap="handleShare('Month')"
+          >
+            <wd-icon name="view-list" size="20px" color="#007aff"></wd-icon>
+            <text>分享当月值班</text>
+          </view>
         </view>
-        <view class="content-item">
-          <view class="content-item-title">
-            <text>其他事项</text>
-          </view>
-          <wd-card title="经营分析">
-            一般的，检举内容由承办的党的委员会或纪律检查委员会将处理意见或复议、复查结论同申诉人见面，听取其意见。复议、复查的结论和决定，应交给申诉人一份。
-          </wd-card>
+        <view
+          class="cancel-btn py-[24rpx] text-[28rpx] text-center color-[#666666] fw-600 bg-[#f5f5f5]"
+          @tap="showShare = false"
+        >
+          取 消
         </view>
       </view>
-
-      <wd-calendar
-        ref="calendar"
-        :with-cell="false"
-        type="month"
-        v-model="value"
-        @confirm="handleConfirm"
-      />
-    </div>
+    </wd-action-sheet>
   </xl-navbar>
 
   <!-- <xl-tabber /> -->
@@ -111,7 +245,23 @@ const onHistoryTap = () => {
 
 <style lang="scss" scoped>
 .home {
-  padding: 0 20rpx;
-  padding-bottom: calc(env(safe-area-inset-bottom) + 88px);
+  box-sizing: border-box;
+  height: calc(100% - 55px);
+  background: rgb(248, 248, 248);
+  display: flex;
+  flex-direction: column;
+  .item-content {
+    flex: 1 0 0;
+    overflow-y: auto;
+  }
+  ul,
+  li {
+    list-style: none;
+    padding: 0;
+  }
+}
+
+.share {
+  height: 436rpx;
 }
 </style>
