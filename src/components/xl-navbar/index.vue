@@ -43,7 +43,7 @@ const onBack = () => {
     <!-- 展示标题与返回 -->
     <view
       v-if="showCapsule"
-      class="navbar-capsule w-full flex items-center text-[32rpx] p-[7px]"
+      class="navbar-capsule w-full flex items-center text-[32rpx]"
       :style="{ height: navigationBarHeight, ...navBarStyle }"
     >
       <view class="back-btn w-[22px] h-full flex items-center" v-if="props.showBack">

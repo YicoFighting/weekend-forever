@@ -80,11 +80,6 @@ const onAddTap = () => {
     url: '/pages/home/add/index',
   });
 };
-const onHistoryTap = () => {
-  uni.navigateTo({
-    url: '/pages/home/history/index',
-  });
-};
 
 // 分享
 const showShare = ref(false);
@@ -120,13 +115,30 @@ const onHeightChange = (payload: number) => {
   }
 };
 
+const showMore = ref(false);
+const onMoreTap = () => {
+  showMore.value = true;
+};
+
+const onHistoryTap = () => {
+  uni.navigateTo({
+    url: '/pages/home/history/index',
+  });
+};
+
 const onSyncTap = () => {
   console.log('onSyncTap');
+};
+
+const onSettingTap = () => {
+  uni.navigateTo({
+    url: '/pages/home/setting/index',
+  });
 };
 </script>
 
 <template>
-  <xl-navbar title="首页" :navBarStyle="{ backgroundColor: 'rgb(248, 248, 248)' }">
+  <xl-navbar title="首页">
     <view class="home w-full overflow-hidden">
       <xl-calendar
         :events="mockEvents"
@@ -140,9 +152,28 @@ const onSyncTap = () => {
       >
         <template #header>
           <view class="icon flex justify-end gap-2">
-            <!-- 同步日历 -->
-            <!-- <wd-icon name="refresh1" size="20px" @tap="onSyncTap"></wd-icon> -->
-            <wd-icon name="history" size="20px" color="#007aff" @tap="onHistoryTap" />
+            <wd-icon name="add-circle1" size="20px"></wd-icon>
+            <view class="more">
+              <wd-icon name="more1" size="20px" @tap="onMoreTap"> </wd-icon>
+              <view v-show="showMore" class="relative" @tap="showMore = false">
+                <view class="mask fixed top-0 left-0 w-[100vw] h-[100vh] z-9"></view>
+                <view class="more-popup absolute top-[10px] right-[10px] z-999">
+                  <view
+                    class="list bg-[#fff] w-[200rpx] p-[10px] border border-gray-200 rounded-[10rpx] p-[16rpx]"
+                  >
+                    <view class="item h-[60rpx] flex gap-[10px] items-center" @tap="onHistoryTap">
+                      历史记录
+                    </view>
+                    <view class="item h-[60rpx] flex gap-[10px] items-center" @tap="onSyncTap">
+                      同步至本地
+                    </view>
+                    <view class="item h-[60rpx] flex gap-[10px] items-center" @tap="onSettingTap">
+                      设置
+                    </view>
+                  </view>
+                </view>
+              </view>
+            </view>
           </view>
         </template>
       </xl-calendar>
@@ -157,41 +188,45 @@ const onSyncTap = () => {
           </template>
           <template #default>
             <!-- 值班信息 -->
-            <view class="title flex justify-between items-center mb-[12px]">
+            <view class="title mb-[12px]">
               <h4 class="desc text-[32rpx] fw-600 color-[#333333]">值班信息</h4>
-              <wd-icon name="edit-outline" size="16px" color="#007aff"></wd-icon>
             </view>
-            <view class="card bg-[#f8f9fa] p-[12px] boder-rounded-[6px] mb-[16px]">
+            <view
+              class="card duty bg-[#f8f9fa] p-[12px] boder-rounded-[6px] mb-[16px] flex justify-between items-center"
+            >
               <ul>
                 <li class="flex">
-                  <h4 class="title color-[#666] text-[14px]">值班类型：</h4>
-                  <p class="value color-[#333] text-[14px] fw-500">夜班</p>
+                  <p class="title color-[#333333] text-[14px]">值班类型：</p>
+                  <p class="value color-[#666666] text-[12px]">夜班</p>
                 </li>
                 <li class="flex">
-                  <h4 class="title color-[#666] text-[14px]">时间段：</h4>
-                  <p class="value color-[#333] text-[14px] fw-500">18:00 - 06:00</p>
+                  <p class="title color-[#333333] text-[14px]">时间段：</p>
+                  <p class="value color-[#666666] text-[12px] f">18:00 - 06:00</p>
                 </li>
               </ul>
+              <view class="icon flex gap-[10px]">
+                <wd-icon name="edit-outline" size="16px" color="#007aff"></wd-icon>
+                <wd-icon name="delete1" size="16px" color="#ff3b30"></wd-icon>
+              </view>
             </view>
 
             <!-- 其他事项 -->
             <view class="title flex justify-between items-center mb-[12px]">
               <h4 class="desc text-[32rpx] fw-600 color-[#333333]">其他事项</h4>
-              <wd-icon name="add-circle1" size="16px" color="#007aff"></wd-icon>
             </view>
 
             <view class="flex flex-col gap-[16px] pb-[16px]">
-              <view class="card bg-[#f8f9fa] p-[12px] boder-rounded-[6px] flex justify-between">
+              <view
+                class="card other bg-[#f8f9fa] p-[12px] boder-rounded-[6px] flex justify-between items-center"
+              >
                 <ul>
                   <li class="desc color-[#333333] text-[14px]">查房</li>
                   <li class="time color-[#666666] text-[12px]">18:00 - 06:00</li>
                 </ul>
-                <wd-icon
-                  name="delete1"
-                  size="14px"
-                  color="#ff3b30"
-                  @tap="handleDelete('查房')"
-                ></wd-icon>
+                <view class="icon flex gap-[10px]">
+                  <wd-icon name="edit-outline" size="16px" color="#007aff"></wd-icon>
+                  <wd-icon name="delete1" size="16px" color="#ff3b30"></wd-icon>
+                </view>
               </view>
             </view>
 
@@ -246,13 +281,48 @@ const onSyncTap = () => {
 <style lang="scss" scoped>
 .home {
   box-sizing: border-box;
-  height: calc(100% - 55px);
+  // #ifdef H5
+  height: calc(100vh - 69px);
+  // #endif
+  // #ifndef H5
+  height: 100%;
+  // #endif
   background: rgb(248, 248, 248);
   display: flex;
   flex-direction: column;
+  .mask {
+    background: rgba(0, 0, 0, 0.15);
+  }
+  .list {
+    font-size: 14px;
+    color: #666;
+  }
   .item-content {
     flex: 1 0 0;
     overflow-y: auto;
+  }
+  .card {
+    position: relative;
+    border-radius: 6rpx;
+    overflow: hidden;
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 6rpx;
+    }
+  }
+  .duty {
+    &::before {
+      background: #4caf50;
+    }
+  }
+  .other {
+    &::before {
+      background: #2196f3;
+    }
   }
   ul,
   li {

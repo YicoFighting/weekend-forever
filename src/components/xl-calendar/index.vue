@@ -88,14 +88,14 @@ const weekdayLabels = ['一', '二', '三', '四', '五', '六', '日'];
 
 const height = ref<number>(0);
 const windowHeight = ref<number>(0);
-const anchorsIndex = ref<number>(0);
+const anchorsIndex = ref<number>(1);
 const anchors = ref<number[]>([]);
 
 onLoad(() => {
   // 获取窗口高度
   windowHeight.value = uni.getWindowInfo().windowHeight;
   // 锚定高度
-  anchors.value = [Math.round(0.55 * windowHeight.value), Math.round(0.7 * windowHeight.value)];
+  anchors.value = [Math.round(0.5 * windowHeight.value), Math.round(0.6 * windowHeight.value)];
   // 设置初始高度
   height.value = anchors.value[anchorsIndex.value];
 });
