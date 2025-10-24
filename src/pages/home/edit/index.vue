@@ -57,6 +57,8 @@ const model = reactive<itemFormType>({
   id: '',
   title: '',
   allDay: false,
+  type: 'duty',
+  dates: [],
   startTime: Date.now(),
   endTime: Date.now() + 1 * 60 * 60 * 1000,
   reminds: [],

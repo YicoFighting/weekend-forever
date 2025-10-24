@@ -321,7 +321,7 @@ const onChange = (e: UniHelper.SwiperOnChangeEvent) => {
             align-items: center;
           }
           .today {
-            color: #ff9800;
+            color: #2196f3;
           }
           .cell-events {
             margin: 0 auto;

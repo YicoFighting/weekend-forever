@@ -3,9 +3,9 @@ export type TimestampMs = number;
 
 // 弹窗内部数据模型（提醒设置）
 export interface ItemType {
-  checked: boolean;
+  // checked: boolean;
   // 单位：分钟；0 表示“开始时”
-  reminds: number[];
+  reminds: number;
   // 自定义提醒分钟数
   diyRemind: number;
 }
@@ -14,11 +14,13 @@ export interface ItemType {
 export interface ItemFormType {
   id?: number | string;
   title: string;
+  type: 'duty' | 'other';
   allDay: boolean;
-  startTime: TimestampMs; // 毫秒时间戳
-  endTime: TimestampMs; // 毫秒时间戳
+  dates: number[];
+  startTime: string; // 毫秒时间戳
+  endTime: string; // 毫秒时间戳
   // 单位：分钟；如 0（开始时）、5、10、30、60 等
-  reminds: number[];
+  remind: number;
   remark: string;
 }
 

@@ -21,16 +21,6 @@ const mockEvents = {
       value: 'other',
     },
   ],
-  '2025-10-21': [
-    {
-      id: 0,
-      title: '值班',
-      description: '值班',
-      dtStart: 1761062400000,
-      dtEnd: 1761148799000,
-      value: 'duty',
-    },
-  ],
   '2025-10-22': [
     {
       id: 1,
@@ -152,7 +142,7 @@ const onSettingTap = () => {
       >
         <template #header>
           <view class="icon flex justify-end gap-2">
-            <wd-icon name="add-circle1" size="20px"></wd-icon>
+            <wd-icon name="add-circle1" size="20px" @tap="onAddTap"></wd-icon>
             <view class="more">
               <wd-icon name="more1" size="20px" @tap="onMoreTap"> </wd-icon>
               <view v-show="showMore" class="relative" @tap="showMore = false">

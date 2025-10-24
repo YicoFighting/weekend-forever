@@ -1,98 +1,143 @@
 <template>
-  <view class="add h-[100vh] bg-[#f5f5f5]">
-    <wd-navbar safeAreaInsetTop :bordered="false">
-      <template #left>
-        <wd-icon name="close" size="22px" @tap="goBack"></wd-icon>
-      </template>
-      <template #right>
-        <wd-icon name="check" size="22px" @tap="handleSubmit"></wd-icon>
-      </template>
-    </wd-navbar>
-    <h4 class="font-normal pl-[20px] text-[20px] py-[10px]">创建日程</h4>
-    <wd-form ref="form" :model="model">
-      <wd-card>
-        <wd-input prop="title" v-model="model.title" placeholder="请输入日程标题" />
-      </wd-card>
+  <xl-navbar title="创建日程" showBack>
+    <view class="add h-full bg-[#f5f5f5] relative">
+      <wd-form ref="form" :model="model" class="form">
+        <!-- 标题 -->
+        <wd-card>
+          <wd-input
+            class="h-[92rpx] title"
+            prop="title"
+            v-model="model.title"
+            placeholder="请输入日程标题"
+          />
+        </wd-card>
 
-      <wd-card>
-        <wd-cell-group class="time">
-          <wd-cell title="全天事件">
-            <wd-switch v-model="model.allDay" size="16px" />
-          </wd-cell>
-          <wd-cell title="开始时间">
-            <wd-datetime-picker v-model="model.startTime" :displayFormat="displayFormat" />
-          </wd-cell>
-          <wd-cell title="结束时间">
-            <wd-datetime-picker v-model="model.endTime" :displayFormat="displayFormat" />
-          </wd-cell>
-          <wd-cell title="提醒">
-            <view @tap="show = true">
-              <text>{{ remindText }}</text>
-              <wd-icon name="chevron-right" size="16px" color="rgba(0, 0, 0, 0.25)"></wd-icon>
+        <!-- 类型 -->
+        <wd-card>
+          <wd-cell title="类型">
+            <view class="type flex w-full justify-end gap-[10rpx]">
+              <view
+                class="type-duty"
+                :class="{ active: model.type === 'duty' }"
+                @tap="model.type = 'duty'"
+              >
+                值班
+              </view>
+              <view
+                class="type-other"
+                :class="{ active: model.type === 'other' }"
+                @tap="model.type = 'other'"
+              >
+                其他
+              </view>
             </view>
           </wd-cell>
-        </wd-cell-group>
-      </wd-card>
+        </wd-card>
 
-      <wd-card>
-        <wd-textarea prop="remark" v-model="model.remark" placeholder="请输入备注" />
-      </wd-card>
-    </wd-form>
+        <!-- 日期 -->
+        <wd-card>
+          <wd-cell title="日期">
+            <wd-calendar type="dates" v-model="model.dates" />
+          </wd-cell>
+        </wd-card>
+
+        <!-- 时间段 -->
+        <wd-card>
+          <wd-cell title="时间段">
+            <view @tap="showTimePicker = true">
+              <text class="mr-[16rpx]">{{ model.startTime }} 至 {{ model.endTime }}</text>
+              <wd-icon name="arrow-right" size="16px" color="rgba(0, 0, 0, 0.25)"></wd-icon>
+            </view>
+          </wd-cell>
+        </wd-card>
+
+        <!-- 提醒 -->
+        <wd-card>
+          <wd-cell title="提醒">
+            <view @tap="show = true">
+              <text class="mr-[16rpx]">{{ remindText }}</text>
+              <wd-icon name="arrow-right" size="16px" color="rgba(0, 0, 0, 0.25)"></wd-icon>
+            </view>
+          </wd-cell>
+        </wd-card>
+
+        <!-- 备注 -->
+        <wd-card>
+          <wd-textarea prop="remark" v-model="model.remark" placeholder="请输入备注" />
+        </wd-card>
+
+        <!-- 附件 -->
+        <wd-card>
+          <view class="pt-[6rpx] mb-[6rpx]">附件</view>
+          <wd-upload
+            accept="all"
+            :limit="3"
+            :auto-upload="false"
+            multiple
+            :file-list="fileList"
+          ></wd-upload>
+        </wd-card>
+      </wd-form>
+
+      <view class="footer w-full flex items-center">
+        <wd-button class="w-full" type="primary" @tap="handleSubmit"> 提交 </wd-button>
+      </view>
+    </view>
+
+    <!-- 时间段 -->
+    <time-item
+      v-model="showTimePicker"
+      :start-time="model.startTime"
+      :end-time="model.endTime"
+      @confirm="handleTimeConfirm"
+    />
 
     <!-- 提醒 -->
-    <xl-add-item v-model="show" @close="handleClose" />
-  </view>
+    <remind-item v-model="show" :remind="model.remind" @confirm="handleConfirm" />
+  </xl-navbar>
 </template>
 
 <script setup lang="ts">
 import dayjs from 'dayjs';
-import { reactive, ref } from 'vue';
+import { computed, reactive, ref } from 'vue';
 import { onLoad, onBackPress } from '@dcloudio/uni-app';
 import type { FormInstance } from 'wot-design-uni/components/wd-form/types';
 import type { itemFormType, itemType } from '@/types/item';
 import { useGoBack } from '@/composables/useGoBack';
+import { NO_REMIND, NO_REMIND_VALUE, REMIND_OPTIONS } from '@/constants/reminds';
+import RemindItem from '../components/remind-item.vue';
+import TimeItem from '../components/time-item.vue';
 
 const form = ref<FormInstance>();
+const fileList = ref<any[]>([]);
 const model = reactive<itemFormType>({
+  type: 'duty',
   title: '',
   allDay: false,
-  startTime: Date.now(),
-  endTime: Date.now() + 1 * 60 * 60 * 1000,
-  reminds: [],
+  dates: [dayjs().startOf('day').valueOf()],
+  startTime: '09:00',
+  endTime: '18:00',
+  remind: NO_REMIND_VALUE,
   remark: '',
 });
 
-// 使用 dayjs：YYYY年M月D日 ddd A h:mm -> 2025年10月9日 周四 下午 1:00
-type DateTimePickerItems = Record<string, any>[];
-
-const displayFormat = (items: DateTimePickerItems) => {
-  const year = Number(items[0]?.label);
-  const month = Number(items[1]?.label);
-  const day = Number(items[2]?.label);
-  const hour24 = Number(items[3]?.label);
-  const minute = Number(items[4]?.label);
-  const date = new Date(year, month - 1, day, hour24, minute);
-  return dayjs(date).format('YYYY年M月D日 ddd A h:mm');
+// 时间段
+const showTimePicker = ref(false);
+const handleTimeConfirm = (val: { startTime: string; endTime: string }) => {
+  model.startTime = val.startTime;
+  model.endTime = val.endTime;
 };
 
 // 提醒
 const show = ref(false);
-const remindText = ref('开始时');
-const handleClose = (model: itemType) => {
-  console.log(model, 'model');
-  if (model.checked) {
-    remindText.value = model.reminds
-      .map((item) => (item == 0 ? '开始时' : `${item}分钟前`))
-      .join('、');
-  } else {
-    remindText.value = '关闭';
-  }
+const remindText = computed(() => {
+  const remind = REMIND_OPTIONS.find((item) => item.value === model.remind);
+  return remind?.label || model.remind + '分钟前';
+});
+const handleConfirm = ({ value }: { value: number }) => {
+  model.remind = Number(value);
 };
 
-// 点击事件
-const goBack = () => {
-  useGoBack();
-};
 const handleSubmit = () => {
   console.log(model, 'model');
   useGoBack();
@@ -115,34 +160,104 @@ onBackPress(() => {
 
 <style lang="scss" scoped>
 .add {
-  :deep(.wd-navbar__content) {
-    background-color: #f5f5f5;
-  }
-  :deep(.wd-input) {
-    &::after {
-      display: none !important;
+  box-sizing: border-box;
+  padding: 24rpx 0 0 0;
+
+  display: flex;
+  flex-direction: column;
+
+  :deep(.wd-card) {
+    margin: 0 0 16rpx 0;
+    border-radius: 12rpx;
+
+    .title {
+      .wd-input__inner {
+        height: 92rpx;
+      }
     }
-  }
-  .time {
-    :deep(.wd-cell) {
-      padding-left: unset;
+
+    .type-duty,
+    .type-other {
+      color: #666;
+      font-size: 24rpx;
+      padding: 0 20rpx;
+      border-radius: 16rpx;
+      border: 2rpx solid #e8e8e8;
+      background-color: #fff;
+      transition: all 0.3s ease;
+    }
+
+    .active {
+      color: #fff;
+    }
+
+    .type-duty.active {
+      background-color: #4caf50;
+    }
+    .type-other.active {
+      background-color: #2196f3;
+    }
+
+    .wd-cell {
+      padding: 0;
       .wd-cell__wrapper {
-        padding-right: 0;
+        height: 92rpx;
+        padding: 0;
+        display: flex;
+        align-items: center;
       }
-      .wd-cell__left {
-        width: 200rpx;
-        flex: unset;
-        margin-right: unset;
-      }
-      .wd-cell__right {
-        .wd-cell__wrapper {
-          padding: 0;
-        }
-        .wd-cell__value--left {
-          text-align: right;
-        }
+
+      .wd-cell__value {
+        text-align: right;
+        margin-right: 16rpx;
+        color: #666;
       }
     }
+
+    .wd-cell.is-hover {
+      background: unset;
+    }
+
+    .wd-textarea {
+      padding: 6rpx 0;
+    }
+
+    .wd-upload__evoke {
+      border: 2rpx dashed #e0e0e0;
+      border-radius: 8px;
+    }
+
+    .wd-upload__mask {
+      display: none;
+    }
+    .wd-upload__status-content {
+      border: 2rpx dashed #e0e0e0;
+      border-radius: 16rpx;
+    }
   }
+
+  .form {
+    flex: 1 0 0;
+    overflow-y: auto;
+    padding: 0 32rpx;
+  }
+
+  .footer {
+    box-sizing: border-box;
+    flex-shrink: 0;
+    padding: 32rpx;
+    background-color: #fff;
+    border-top: 1px solid #f0f0f0;
+    .wd-button.is-primary {
+      height: 96rpx;
+      border-radius: 12rpx;
+    }
+  }
+
+  ::-webkit-scrollbar {
+    display: none;
+  }
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 </style>
