@@ -20,6 +20,24 @@
       }
     },
     {
+      "path": "pages/home/list/index",
+      "style": {
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/home/share/index",
+      "style": {
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/home/setting/index",
+      "style": {
+        "navigationStyle": "custom"
+      }
+    },
+    {
       "path": "pages/home/add/index",
       "style": {
         "navigationStyle": "custom",

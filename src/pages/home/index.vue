@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import dayjs from 'dayjs';
+import SyncItem from './components/sync-item.vue';
+import DeleteItem from './components/delete-item.vue';
 
 const mockEvents = {
   '2025-10-20': [
@@ -81,14 +83,6 @@ const handleShare = (type: 'Day' | 'Month') => {
   });
 };
 
-// 删除其他事项
-const handleDelete = (title: string) => {
-  uni.showToast({
-    title: '删除成功',
-    icon: 'success',
-  });
-};
-
 // 日历高度变化时
 const itemContent = ref();
 const onHeightChange = (payload: number) => {
@@ -116,13 +110,51 @@ const onHistoryTap = () => {
   });
 };
 
+// 打开同步弹窗
+const syncItem = ref();
 const onSyncTap = () => {
-  console.log('onSyncTap');
+  syncItem.value?.beforeConfirm();
 };
 
+// 打开删除弹窗
+const deleteItem = ref();
+const onDeleteTap = () => {
+  deleteItem.value?.beforeConfirm();
+};
+// 删除其他事项
+const handleDelete = () => {
+  deleteItem.value?.handleCancel();
+  uni.showToast({
+    title: '删除成功',
+    icon: 'success',
+  });
+};
+
+// 配置中心
 const onSettingTap = () => {
   uni.navigateTo({
     url: '/pages/home/setting/index',
+  });
+};
+
+// 共享值班
+const onShareTap = () => {
+  uni.navigateTo({
+    url: '/pages/home/share/index',
+  });
+};
+
+// 打开编辑弹窗
+const onEditTap = () => {
+  uni.navigateTo({
+    url: '/pages/home/edit/index?id=1',
+  });
+};
+
+// 当天事项以列表展开
+const onListTap = () => {
+  uni.navigateTo({
+    url: '/pages/home/list/index',
   });
 };
 </script>
@@ -158,7 +190,10 @@ const onSettingTap = () => {
                       同步至本地
                     </view>
                     <view class="item h-[60rpx] flex gap-[10px] items-center" @tap="onSettingTap">
-                      设置
+                      配置中心
+                    </view>
+                    <view class="item h-[60rpx] flex gap-[10px] items-center" @tap="onShareTap">
+                      分享的值班
                     </view>
                   </view>
                 </view>
@@ -173,6 +208,8 @@ const onSettingTap = () => {
           <template #title>
             <view class="flex justify-between items-center">
               {{ `${selectedDay} 详情` }}
+              <!-- 以列表形式展示当天的值班信息 -->
+              <wd-icon name="list" size="16px" @tap="onListTap"></wd-icon>
               <wd-icon name="share" size="16px" color="#007aff" @tap="showShare = true"></wd-icon>
             </view>
           </template>
@@ -195,8 +232,8 @@ const onSettingTap = () => {
                 </li>
               </ul>
               <view class="icon flex gap-[10px]">
-                <wd-icon name="edit-outline" size="16px" color="#007aff"></wd-icon>
-                <wd-icon name="delete1" size="16px" color="#ff3b30"></wd-icon>
+                <wd-icon name="edit-outline" size="16px" color="#007aff" @tap="onEditTap"></wd-icon>
+                <wd-icon name="delete1" size="16px" color="#ff3b30" @tap="onDeleteTap"></wd-icon>
               </view>
             </view>
 
@@ -214,8 +251,13 @@ const onSettingTap = () => {
                   <li class="time color-[#666666] text-[12px]">18:00 - 06:00</li>
                 </ul>
                 <view class="icon flex gap-[10px]">
-                  <wd-icon name="edit-outline" size="16px" color="#007aff"></wd-icon>
-                  <wd-icon name="delete1" size="16px" color="#ff3b30"></wd-icon>
+                  <wd-icon
+                    name="edit-outline"
+                    size="16px"
+                    color="#007aff"
+                    @tap="onEditTap"
+                  ></wd-icon>
+                  <wd-icon name="delete1" size="16px" color="#ff3b30" @tap="onDeleteTap"></wd-icon>
                 </view>
               </view>
             </view>
@@ -236,6 +278,7 @@ const onSettingTap = () => {
       @confirm="handleConfirm"
     />
 
+    <!-- 在数据库要单独存分享表 -->
     <wd-action-sheet v-model="showShare">
       <view class="share p-[32rpx]">
         <h4 class="text-[16px] text-center color-[#333333] fw-600 mb-[32rpx]">分享值班信息</h4>
@@ -263,6 +306,10 @@ const onSettingTap = () => {
         </view>
       </view>
     </wd-action-sheet>
+
+    <sync-item ref="syncItem" />
+
+    <delete-item ref="deleteItem" @confirm="handleDelete" />
   </xl-navbar>
 
   <!-- <xl-tabber /> -->
