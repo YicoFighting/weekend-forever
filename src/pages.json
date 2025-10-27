@@ -26,6 +26,12 @@
       }
     },
     {
+      "path": "pages/home/receive/index",
+      "style": {
+        "navigationStyle": "custom"
+      }
+    },
+    {
       "path": "pages/home/share/index",
       "style": {
         "navigationStyle": "custom"

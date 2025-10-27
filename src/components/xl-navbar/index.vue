@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useGoBack } from '@/composables/useGoBack';
 import { computed, type CSSProperties } from 'vue';
 // 获取屏幕边界到安全区域距离
 const { safeAreaInsets } = uni.getWindowInfo();
@@ -28,7 +29,7 @@ const showCapsule = computed(() => {
 });
 
 const onBack = () => {
-  uni.navigateBack();
+  useGoBack();
 };
 </script>
 

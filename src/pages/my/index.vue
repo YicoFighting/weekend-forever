@@ -10,6 +10,9 @@
 
       <wd-card>
         <wd-cell-group>
+          <wd-cell title="通知">
+            <wd-icon name="chevron-right" size="16px" color="rgba(0, 0, 0, 0.25)"></wd-icon>
+          </wd-cell>
           <wd-cell title="修改密码">
             <wd-icon name="chevron-right" size="16px" color="rgba(0, 0, 0, 0.25)"></wd-icon>
           </wd-cell>

@@ -136,11 +136,24 @@ const onSettingTap = () => {
     url: '/pages/home/setting/index',
   });
 };
-
-// 共享值班
-const onShareTap = () => {
+// 分享当月值班
+const onShareMonthTap = () => {
   uni.navigateTo({
-    url: '/pages/home/share/index',
+    url: '/pages/home/share/index?type=month',
+  });
+};
+
+// 分享当天值班
+const onShareDayTap = () => {
+  uni.navigateTo({
+    url: '/pages/home/share/index?type=day',
+  });
+};
+
+// 接收的值班
+const onReceiveTap = () => {
+  uni.navigateTo({
+    url: '/pages/home/receive/index',
   });
 };
 
@@ -189,11 +202,17 @@ const onListTap = () => {
                     <view class="item h-[60rpx] flex gap-[10px] items-center" @tap="onSyncTap">
                       同步至本地
                     </view>
+                    <view
+                      class="item h-[60rpx] flex gap-[10px] items-center"
+                      @tap="onShareMonthTap"
+                    >
+                      分享当月值班
+                    </view>
+                    <view class="item h-[60rpx] flex gap-[10px] items-center" @tap="onReceiveTap">
+                      接收的值班
+                    </view>
                     <view class="item h-[60rpx] flex gap-[10px] items-center" @tap="onSettingTap">
                       配置中心
-                    </view>
-                    <view class="item h-[60rpx] flex gap-[10px] items-center" @tap="onShareTap">
-                      分享的值班
                     </view>
                   </view>
                 </view>
@@ -209,8 +228,10 @@ const onListTap = () => {
             <view class="flex justify-between items-center">
               {{ `${selectedDay} 详情` }}
               <!-- 以列表形式展示当天的值班信息 -->
-              <wd-icon name="list" size="16px" @tap="onListTap"></wd-icon>
-              <wd-icon name="share" size="16px" color="#007aff" @tap="showShare = true"></wd-icon>
+              <view class="flex gap-[10px]">
+                <wd-icon name="list" size="16px" color="#007aff" @tap="onListTap"></wd-icon>
+                <wd-icon name="share" size="16px" color="#007aff" @tap="onShareDayTap"></wd-icon>
+              </view>
             </view>
           </template>
           <template #default>
