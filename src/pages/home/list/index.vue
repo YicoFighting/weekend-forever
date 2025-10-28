@@ -33,9 +33,9 @@
         <template v-for="item in list" :key="item.date">
           <view class="list-item flex flex-col gap-[12px]">
             <view class="date-header flex justify-end items-center mt-[12px]">
-              <div class="record-count text-[12px] text-[#666]">
+              <view class="record-count text-[12px] text-[#666]">
                 共{{ item.records.length }}条记录
-              </div>
+              </view>
             </view>
             <template v-for="record in item.records" :key="`${item.date}-${record.time}`">
               <list-item
