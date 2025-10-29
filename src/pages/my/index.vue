@@ -10,7 +10,7 @@
 
       <wd-card>
         <wd-cell-group>
-          <wd-cell title="通知">
+          <wd-cell title="通知" clickable @click="handleNotify">
             <wd-icon name="chevron-right" size="16px" color="rgba(0, 0, 0, 0.25)"></wd-icon>
           </wd-cell>
           <wd-cell title="修改密码">
@@ -29,6 +29,14 @@
 <script setup lang="ts">
 const online =
   'https://www4.bing.com//th?id=OHR.RidgwayAspens_ZH-CN8735375502_1920x1080.jpg&rf=LaDigue_1920x1080.jpg&pid=hp&w=360&h=202';
+
+const handleNotify = () => {
+  console.log('handleNotify');
+
+  uni.navigateTo({
+    url: '/pages/my/notify/index',
+  });
+};
 </script>
 
 <style lang="scss">
